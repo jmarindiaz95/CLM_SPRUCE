@@ -294,6 +294,7 @@ contains
     integer :: unitn                ! unit for namelist file
     character(len=40) :: ch4parname(nummicrobepar)  ! subroutine name
     character(LEN=256)::locfn='./microbepar_in'
+    character(len=40) :: expected_names(86)
 !-----------------------------------------------------------------------
 
 real(r8)::dummy(nummicrobepar)
@@ -310,6 +311,38 @@ real(r8)::dummy(nummicrobepar)
        end if
        end do
        call relavu( unitn )
+
+! Guard against a microbepar_in whose line order does not match the read order below
+! (the CLM_SPRUCE file had 3 obsolete lines that shifted dom_diffus, m_Fick_ad, m_dPlantTrans).
+       expected_names = (/ character(len=40) :: &
+       'q10ch4base', 'q10ch4', 'vmax_ch4_oxid', 'k_m', &
+       'q10_ch4oxid', 'smp_crit', 'aereoxid', 'mino2lim', &
+       'rootlitfrac', 'scale_factor_aere', 'vgc_max', 'organic_max', &
+       'satpow', 'cnscalefactor', 'f_ch4', 'k_m_o2', &
+       'nongrassporosratio', 'usephfact', 'k_m_unsat', 'vmax_oxid_unsat', &
+       'scale_factor_gasdiff', 'scale_factor_liqdiff', 'redoxlag', 'usefrootc', &
+       'ch4offline', 'redoxlag_vertical', 'fin_use_fsat', 'atmch4', &
+       'lit2avc', 'som2avc', 'm_dKAce', 'm_dAceProdACmax', &
+       'm_dKAceProdO2', 'm_dH2ProdAcemax', 'm_dKH2ProdAce', 'm_dKCO2ProdAce', &
+       'm_dGrowRH2Methanogens', 'm_dDeadRH2Methanogens', 'm_dYH2Methanogens', 'm_dGrowRAceMethanogens', &
+       'm_dDeadRAceMethanogens', 'm_dYAceMethanogens', 'm_dGrowRMethanotrophs', 'm_dDeadRMethanotrophs', &
+       'm_dYMethanotrophs', 'm_dGrowRAOMMethanotrophs', 'm_dDeadRAOMMethanotrophs', 'm_dYAOMMethanotrophs', &
+       'm_dAceProdQ10', 'm_dACProdQ10', 'm_dACMinQ10', 'm_dAceH2min', &
+       'm_dCH4H2min', 'm_dKH2ProdCH4', 'm_dKCO2ProdCH4', 'm_dH2CH4ProdQ10', &
+       'm_dH2AceProdQ10', 'm_dKCH4ProdAce', 'm_dKCH4ProdO2', 'm_dCH4ProdQ10', &
+       'm_drCH4Prod', 'm_dKCH4OxidCH4', 'm_dKAOMCH4OxidCH4', 'm_dKCH4OxidO2', &
+       'm_dCH4OxidQ10', 'm_dAOMCH4OxidQ10', 'm_drAer', 'm_dKAerO2', &
+       'm_dAerDecomQ10', 'm_drCH4Oxid', 'm_dKe', 'm_dCH4min', &
+       'm_dAirCH4', 'm_dAirH2', 'm_dAirO2', 'm_dAirCO2', &
+       'frac_doc', 'frac_ace', 'frac_acch4', 'frac_hych4', &
+       'frac_acetogenesis', 'frac_ch4ox', 'frac_ch4aom', 'dom_diffus', &
+       'm_Fick_ad', 'm_dPlantTrans' /)
+       do i = 1, size(expected_names)
+          if (trim(adjustl(ch4parname(i))) /= trim(expected_names(i))) then
+             write(iulog,*) 'microbepar_in line ', i, ': found ', trim(ch4parname(i)), ', expected ', trim(expected_names(i))
+             call endrun('microbepar_in parameter order does not match microbevarcon.F90')
+          end if
+       end do
 
 i=1
 
