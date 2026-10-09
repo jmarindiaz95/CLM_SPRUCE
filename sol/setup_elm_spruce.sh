@@ -14,6 +14,7 @@ module load netcdf-c-4.8.1-oneapi-2022.1.0
 module load netcdf-fortran-4.5.3-oneapi-2022.1.0
 export I_MPI_CC=icc I_MPI_CXX=icpc I_MPI_FC=ifort I_MPI_F90=ifort I_MPI_F77=ifort
 export UCX_TLS=sm,tcp,self
+export LD_LIBRARY_PATH=/scratch/jmarindi/clm_work/netcdf_merged_oneapi/lib:$LD_LIBRARY_PATH
 
 # ---------------------------------------------------------------- paths (all on scratch; code is a git clone, so a purge is recoverable)
 W=/scratch/jmarindi/elm_work
@@ -82,7 +83,7 @@ done
 cat > Macros <<EOF
 CPPDEFS+= -DHUM_HOL -DFORTRANUNDERSCORE -DNO_R16 -DLINUX -DCPRINTEL
 
-SLIBS+= -L$NCDF/lib -lnetcdf -lnetcdff -qmkl
+SLIBS+= -L$NCDF/lib -Wl,-rpath,$NCDF/lib -lnetcdf -lnetcdff -qmkl
 
 CFLAGS:= -O2 -fp-model precise
 
