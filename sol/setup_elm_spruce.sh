@@ -59,7 +59,7 @@ cd "$CASE"
 ./xmlchange -file env_build.xml -id MPILIB -val openmpi
 ./xmlchange -file env_build.xml -id EXEROOT -val $BLD
 ./xmlchange -file env_build.xml -id GMAKE_J -val 4
-./xmlchange -file env_build.xml -id CLM_CONFIG_OPTS -val "-phys clm4_5 -bgc cn -vsoilc_centbgc on -clm4me on -microbe on"
+./xmlchange -file env_build.xml -id CLM_CONFIG_OPTS -val "-phys clm4_5 -bgc cn -vsoilc_centbgc no-cent -clm4me on -microbe on"
 ./xmlchange -file env_run.xml   -id RUNDIR -val $RUN
 ./xmlchange -file env_run.xml   -id DIN_LOC_ROOT -val $DIN
 ./xmlchange -file env_run.xml   -id CLM_USRDAT_NAME -val 2x1pt_US-SPR
@@ -151,7 +151,7 @@ EOF
 
 # ---------------------------------------------------------------- 6. setup + checks
 ./cesm_setup
-echo "==== cppdefs from configure (want VERTSOILC CENTURY_DECOMP NITRIF_DENITRIF LCH4 MICROBE):"
+echo "==== cppdefs from configure (want VERTSOILC NITRIF_DENITRIF LCH4 MICROBE, and NOT CENTURY_DECOMP: the microbial module needs the 8-pool CN cascade, ndecomp_pools=11):"
 cat Buildconf/clmconf/CESM_cppdefs
 echo "==== Macros CPPDEFS (want HUM_HOL):"
 grep CPPDEFS Macros
