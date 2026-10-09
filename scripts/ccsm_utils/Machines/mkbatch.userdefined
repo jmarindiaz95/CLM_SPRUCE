@@ -76,6 +76,7 @@ setenv OMP_NUM_THREADS ${maxthrds}
 
 #mpiexec -n ${maxtasks} \$EXEROOT/cesm.exe >&! cesm.log.\$LID
 #mpirun -np ${maxtasks} \$EXEROOT/cesm.exe >&! cesm.log.\$LID
+srun -n ${maxtasks} \$EXEROOT/cesm.exe >&! cesm.log.\$LID
 
 wait
 echo "\`date\` -- CSM EXECUTION HAS FINISHED" 
