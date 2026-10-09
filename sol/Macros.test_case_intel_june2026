@@ -1,0 +1,62 @@
+#
+# Makefile Macros generated from /scratch/jmarindi/clm_work/clm-microbe/scripts/ccsm_utils/Machines/config_compilers.xml using
+# COMPILER=intel
+# OS=LINUX
+# MACH=userdefined
+#
+CPPDEFS+= -DMICROBE  -DFORTRANUNDERSCORE -DNO_R16 -DLINUX -DCPRINTEL 
+
+SLIBS+= -L/scratch/jmarindi/clm_work/netcdf_merged_oneapi/lib -lnetcdf -lnetcdff -qmkl
+
+CFLAGS:= -O2 -fp-model precise 
+
+CONFIG_ARGS:=
+
+CXX_LDFLAGS:= -cxxlib 
+
+CXX_LINKER:=FORTRAN
+
+ESMF_LIBDIR:=
+
+FC_AUTO_R8:= -r8 
+
+FFLAGS:= -O2 -fp-model source -convert big_endian -assume byterecl -ftz -traceback 
+
+FFLAGS_NOOPT:= -O0 
+
+FIXEDFLAGS:= -fixed -132 
+
+FREEFLAGS:= -free 
+
+MPICC:= mpicc  
+
+MPICXX:= mpicxx 
+
+MPIFC:= mpif90 
+
+MPI_LIB_NAME:=
+
+MPI_PATH:=
+
+NETCDF_PATH:= /scratch/jmarindi/clm_work/netcdf_merged_oneapi
+
+PNETCDF_PATH:=
+
+SCC:= icc 
+
+SCXX:= icpc 
+
+SFC:= ifort 
+
+SUPPORTS_CXX:=TRUE
+
+ifeq ($(DEBUG), TRUE) 
+   FFLAGS += -g -CU -check pointers -fpe0 
+endif
+
+ifeq ($(compile_threaded), true) 
+   CFLAGS += -openmp 
+   LDFLAGS += -openmp 
+   FFLAGS += -openmp 
+endif
+
