@@ -64,8 +64,8 @@ contains
     use shr_kind_mod  , only : r8 => shr_kind_r8
     use clmtype
     use clm_atmlnd    , only : clm_a2l
-    use clm_time_manager  , only : get_step_size
-    use clm_varctl    , only : iulog
+    use clm_time_manager  , only : get_step_size, get_curr_date
+    use clm_varctl    , only : iulog, startyear_experiment, endyear_experiment, add_temperature
     use shr_infnan_mod, only : nan => shr_infnan_nan, assignment(=)
     use clm_varcon    , only : sb, capr, cnfac, hvap, isturb, &
                                icol_roof, icol_sunwall, icol_shadewall, &

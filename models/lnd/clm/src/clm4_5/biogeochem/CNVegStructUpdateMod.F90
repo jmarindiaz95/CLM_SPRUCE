@@ -113,6 +113,8 @@ subroutine CNVegStructUpdate(num_soilp, filter_soilp)
    real(r8) :: tsai_alpha  ! monthly decay rate of tsai
    real(r8) dt             ! radiation time step (sec)
    real(r8) :: thiswtht
+   real(r8) :: fb_wt               ! fraction of Sphagnum canopy above water (HUM_HOL)
+   real(r8), pointer :: h2osfc(:)  ! surface water (mm)
 
    real(r8), parameter :: dtsmonth = 2592000._r8 ! number of seconds in a 30 day month (60x60x24x30)
 !EOP

@@ -40,7 +40,7 @@ subroutine CNGapMortality (num_soilc, filter_soilc, num_soilp, filter_soilp)
 !
 ! !USES:
    use clmtype
-   use clm_time_manager, only: get_days_per_year
+   use clm_time_manager, only: get_days_per_year, get_curr_date
    use clm_varcon      , only: secspday
    use pftvarcon       , only: npcropmin, r_mort
    use microbevarcon

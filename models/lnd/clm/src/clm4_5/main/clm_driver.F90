@@ -711,8 +711,10 @@ subroutine clm_drv(doalb, nextsw_cday, declinp1, declin, rstwr, nlend, rdate)
 #ifndef HUM_HOL
      call update_finundated(begc, endc,filter(nc)%num_soilc, filter(nc)%soilc)
 #endif
-     call microbech4 (begg, endg, begl, endl, begc, endc, begp, endp, filter(nc)%num_soilc, filter(nc)%soilc, &
-               filter(nc)%num_soilp, filter(nc)%soilp)
+     ! microbech4 is called from CNEcosystemDyn (after CStateUpdate3), as in email-clm/CLM-Microbe master;
+     ! this older call used a stale argument list and would double-count CH4 processes.
+!     call microbech4 (begg, endg, begl, endl, begc, endc, begp, endp, filter(nc)%num_soilc, filter(nc)%soilc, &
+!               filter(nc)%num_soilp, filter(nc)%soilp)
 !     call microben2o (begg, endg, begl, endl, begc, endc, begp, endp, filter(nc)%num_soilc, filter(nc)%soilc, &
 !               filter(nc)%num_soilp, filter(nc)%soilp)
 !     call microbeCN (begg, endg, begl, endl, begc, endc, begp, endp, filter(nc)%num_soilc, filter(nc)%soilc, &
