@@ -34,7 +34,7 @@ sub findmodeldate{
     open(F,$file) or die "Could not open $file";
     my @firstdate;
     while(<F>){
-	if(defined @date){
+	if(@date){
 	    if(/model date =\s+$date[1]\s+$date[2] wall/){
 		$firstdate[0] = tell F;
 		last;
