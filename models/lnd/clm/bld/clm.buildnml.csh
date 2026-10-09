@@ -110,6 +110,15 @@ if (-d ${RUNDIR}) then
   cp $CASEBUILD/clmconf/lnd_in ${RUNDIR}/$lnd_in_filename || exit -2
   # Only copy drv_flds_in namelist file if one doesn't already exist
   if ( ! -f "${RUNDIR}/drv_flds_in" ) cp $CASEBUILD/clmconf/drv_flds_in ${RUNDIR}/. >& /dev/null
+  # Microbial CH4 module reads ./microbepar_in (text, nummicrobepar values).
+  # A copy in the case directory takes precedence (use it for calibration); otherwise the inputdata default.
+  if ( `grep -c MICROBE $CASEBUILD/clmconf/CESM_cppdefs` > 0 ) then
+    if ( -f $CASEROOT/microbepar_in ) then
+      cp $CASEROOT/microbepar_in ${RUNDIR}/microbepar_in || exit -2
+    else
+      cp $DIN_LOC_ROOT/lnd/clm2/paramdata/microbepar_in ${RUNDIR}/microbepar_in || exit -2
+    endif
+  endif
 endif
 
 @ inst_counter = $inst_counter + 1
