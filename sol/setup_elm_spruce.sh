@@ -39,10 +39,10 @@ if [ ! -d "$SRC/.git" ]; then
   git clone https://github.com/jmarindiaz95/CLM_SPRUCE.git "$SRC"
 fi
 cd "$SRC"
-git fetch -q origin respiration
-# SPRUCE PFT parameter file (incl. Sphagnum and hummock-hollow parameters) only lives on the respiration branch
-PARAM=inputdata/lnd/clm2/paramdata/clm_params_spruce_calveg.nc
-[ -f "$PARAM" ] || git show origin/respiration:$PARAM > $PARAM
+git pull -q
+# SPRUCE PFT parameter file (Sphagnum + hummock-hollow parameters) is committed in this fork
+# (copied from upstream branch dmricciuto/CLM_SPRUCE:respiration, Jul 2018 version)
+[ -f inputdata/lnd/clm2/paramdata/clm_params_spruce_calveg.nc ] || { echo "ERROR: SPRUCE param file missing"; exit 1; }
 echo "source commit: $(git log -1 --format='%h %cd' --date=short)"
 
 # ---------------------------------------------------------------- 2. site input data into DIN_LOC_ROOT
