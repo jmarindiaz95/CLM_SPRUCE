@@ -149,6 +149,11 @@ cat > user_nl_clm <<EOF
  hist_mfilt  = 12
 EOF
 
+# ---------------------------------------------------------------- 5b. datm: cycle the site forcing
+# CLM1PT defaults to taxmode='extend', which freezes the forcing at its last time step
+# (31 Dec, night) once the model runs past the forcing years. Spinup needs 'cycle'.
+echo " taxmode = 'cycle', 'cycle'" > user_nl_datm
+
 # ---------------------------------------------------------------- 6. setup + checks
 ./cesm_setup
 echo "==== cppdefs from configure (want VERTSOILC NITRIF_DENITRIF MICROBE; NOT CENTURY_DECOMP (MICROBE needs the 8-pool CN cascade) and NOT LCH4 (MICROBE replaces CLM4Me; the code treats them as alternatives)):"
