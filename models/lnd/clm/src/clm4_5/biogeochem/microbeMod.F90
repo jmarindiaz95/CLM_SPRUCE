@@ -2282,26 +2282,26 @@ end do
 	if(j > jwaterhead_unsat(c) .and. j <= nlevsoi) then
 		caces_unsat_temp(c,j) = (caces_unsat(c,j-1) - caces_unsat(c,j)) * dom_diffus * (soiltemp(c,j)/298)**1.87 * get_step_size() / (z(c,j) - z(c,j-1)) !CH4_dif
 
-		if(abs(caces_unsat_temp(c,j)) < abs(caces_unsat(c,j-1) - (caces_unsat(c,j-1) * dz(c,j-1) + caces_unsat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))))  then
+		if(abs(caces_unsat_temp(c,j)) < abs((caces_unsat(c,j-1) - (caces_unsat(c,j-1) * dz(c,j-1) + caces_unsat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))) * dz(c,j-1)))  then
 		caces_unsat_temp(c,j) = caces_unsat_temp(c,j)
 		else
-		caces_unsat_temp(c,j) = caces_unsat(c,j-1) - (caces_unsat(c,j-1) * dz(c,j-1) + caces_unsat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))
+		caces_unsat_temp(c,j) = (caces_unsat(c,j-1) - (caces_unsat(c,j-1) * dz(c,j-1) + caces_unsat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))) * dz(c,j-1)
 		end if
 		!write(*,*)"before: unsat ",j, caces_unsat(c,j-1),caces_unsat(c,j)
-		caces_unsat(c,j-1) = caces_unsat(c,j-1) - caces_unsat_temp(c,j) * dz(c,j-1)
-		caces_unsat(c,j) = caces_unsat(c,j) + caces_unsat_temp(c,j) * dz(c,j)	
+		caces_unsat(c,j-1) = caces_unsat(c,j-1) - caces_unsat_temp(c,j) / dz(c,j-1)
+		caces_unsat(c,j) = caces_unsat(c,j) + caces_unsat_temp(c,j) / dz(c,j)	
 		!write(*,*)"after: unsat ",j, caces_unsat(c,j-1),caces_unsat(c,j)
 	end if
 		caces_sat_temp(c,j) = (caces_sat(c,j-1) - caces_sat(c,j)) * dom_diffus * (soiltemp(c,j)/298)**1.87 * get_step_size() / (z(c,j) - z(c,j-1)) !CH4_dif
 
-		if(abs(caces_sat_temp(c,j)) < abs(caces_sat(c,j-1) - (caces_sat(c,j-1) * dz(c,j-1) + caces_sat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))))  then
+		if(abs(caces_sat_temp(c,j)) < abs((caces_sat(c,j-1) - (caces_sat(c,j-1) * dz(c,j-1) + caces_sat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))) * dz(c,j-1)))  then
 		caces_sat_temp(c,j) = caces_sat_temp(c,j)
 		else
-		caces_sat_temp(c,j) = caces_sat(c,j-1) - (caces_sat(c,j-1) * dz(c,j-1) + caces_sat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))
+		caces_sat_temp(c,j) = (caces_sat(c,j-1) - (caces_sat(c,j-1) * dz(c,j-1) + caces_sat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))) * dz(c,j-1)
 		end if
 		!write(*,*)"befre: sat ",j, caces_sat(c,j-1),caces_sat(c,j)
-		caces_sat(c,j-1) = caces_sat(c,j-1) - caces_sat_temp(c,j) * dz(c,j-1)
-		caces_sat(c,j) = caces_sat(c,j) + caces_sat_temp(c,j) * dz(c,j)
+		caces_sat(c,j-1) = caces_sat(c,j-1) - caces_sat_temp(c,j) / dz(c,j-1)
+		caces_sat(c,j) = caces_sat(c,j) + caces_sat_temp(c,j) / dz(c,j)
 		!write(*,*)"after: sat ",j, caces_sat(c,j-1),caces_sat(c,j)
 	end do
         end if
@@ -2317,26 +2317,26 @@ end do
 	if(j > jwaterhead_unsat(c) .and. j <= nlevsoi) then
 		cdocs_unsat_temp(c,j) = (cdocs_unsat(c,j-1) - cdocs_unsat(c,j)) * dom_diffus * (soiltemp(c,j)/298)**1.87 * get_step_size() / (z(c,j) - z(c,j-1)) !CH4_dif
 
-		if(abs(cdocs_unsat_temp(c,j)) < abs(cdocs_unsat(c,j-1) - (cdocs_unsat(c,j-1) * dz(c,j-1) + cdocs_unsat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))))  then
+		if(abs(cdocs_unsat_temp(c,j)) < abs((cdocs_unsat(c,j-1) - (cdocs_unsat(c,j-1) * dz(c,j-1) + cdocs_unsat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))) * dz(c,j-1)))  then
 		cdocs_unsat_temp(c,j) = cdocs_unsat_temp(c,j)
 		else
-		cdocs_unsat_temp(c,j) = cdocs_unsat(c,j-1) - (cdocs_unsat(c,j-1) * dz(c,j-1) + cdocs_unsat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))
+		cdocs_unsat_temp(c,j) = (cdocs_unsat(c,j-1) - (cdocs_unsat(c,j-1) * dz(c,j-1) + cdocs_unsat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))) * dz(c,j-1)
 		end if
 		!write(*,*)"before: unsat ",j, cdocs_unsat(c,j-1),cdocs_unsat(c,j)
-		cdocs_unsat(c,j-1) = cdocs_unsat(c,j-1) - cdocs_unsat_temp(c,j) * dz(c,j-1)
-		cdocs_unsat(c,j) = cdocs_unsat(c,j) + cdocs_unsat_temp(c,j) * dz(c,j)	
+		cdocs_unsat(c,j-1) = cdocs_unsat(c,j-1) - cdocs_unsat_temp(c,j) / dz(c,j-1)
+		cdocs_unsat(c,j) = cdocs_unsat(c,j) + cdocs_unsat_temp(c,j) / dz(c,j)	
 		!write(*,*)"after: unsat ",j, cdocs_unsat(c,j-1),cdocs_unsat(c,j)
 	end if
 		cdocs_sat_temp(c,j) = (cdocs_sat(c,j-1) - cdocs_sat(c,j)) * dom_diffus * (soiltemp(c,j)/298)**1.87 * get_step_size() / (z(c,j) - z(c,j-1)) !CH4_dif
 
-		if(abs(cdocs_sat_temp(c,j)) < abs(cdocs_sat(c,j-1) - (cdocs_sat(c,j-1) * dz(c,j-1) + cdocs_sat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))))  then
+		if(abs(cdocs_sat_temp(c,j)) < abs((cdocs_sat(c,j-1) - (cdocs_sat(c,j-1) * dz(c,j-1) + cdocs_sat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))) * dz(c,j-1)))  then
 		cdocs_sat_temp(c,j) = cdocs_sat_temp(c,j)
 		else
-		cdocs_sat_temp(c,j) = cdocs_sat(c,j-1) - (cdocs_sat(c,j-1) * dz(c,j-1) + cdocs_sat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))
+		cdocs_sat_temp(c,j) = (cdocs_sat(c,j-1) - (cdocs_sat(c,j-1) * dz(c,j-1) + cdocs_sat(c,j) * dz(c,j)) / (dz(c,j) + dz(c,j-1))) * dz(c,j-1)
 		end if
 		!write(*,*)"befre: sat ",j, cdocs_sat(c,j-1),cdocs_sat(c,j)
-		cdocs_sat(c,j-1) = cdocs_sat(c,j-1) - cdocs_sat_temp(c,j) * dz(c,j-1)
-		cdocs_sat(c,j) = cdocs_sat(c,j) + cdocs_sat_temp(c,j) * dz(c,j)
+		cdocs_sat(c,j-1) = cdocs_sat(c,j-1) - cdocs_sat_temp(c,j) / dz(c,j-1)
+		cdocs_sat(c,j) = cdocs_sat(c,j) + cdocs_sat_temp(c,j) / dz(c,j)
 		!write(*,*)"after: sat ",j, cdocs_sat(c,j-1),cdocs_sat(c,j)
 	end do
         end if
