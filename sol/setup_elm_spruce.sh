@@ -147,7 +147,12 @@ cat > user_nl_clm <<EOF
  stream_fldfilename_lightng = '$DIN/atm/datm7/NASA_LIS/clmforc.Li_2012_climo1995-2011.1x1pt_US-SPR.lnfm_c130327.nc'
  hist_nhtfrq = 0
  hist_mfilt  = 12
+ use_c13 = .false.
+ use_c14 = .false.
 EOF
+# use_c13/use_c14 default to .true. in this fork's clm_varctl.F90 (OLMT never sets them false).
+# The experimental isotope soil BGC (CIsoSoilBGC + isotopic microbech4) grows C13/C14 pools
+# about 10x per year, which overflows the history file at year ~41. Bulk C is unaffected.
 
 # ---------------------------------------------------------------- 5b. datm: cycle the site forcing
 # CLM1PT defaults to taxmode='extend', which freezes the forcing at its last time step
