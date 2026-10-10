@@ -1046,6 +1046,7 @@ end do
 	    
 	    
 #if defined (MICROBE)
+if ( use_c14 ) then   ! pointers below are only associated when use_c14
 do j = 1, nlevdecomp
 	cmicbiocs14(c,j)	=             cmicbiocs(c,j) * c14ratio
 	cdocs14(c,j)		=          	cdocs(c,j) * c14ratio
@@ -1076,6 +1077,7 @@ do j = 1, nlevdecomp
 	ccon_co2s_unsat14(c,j)    =     	ccon_co2s_unsat(c,j) * c14ratio
 	ccon_co2s_sat14(c,j)      =       	ccon_co2s_sat(c,j) * c14ratio
 end do
+end if
 #endif
 
          end if
