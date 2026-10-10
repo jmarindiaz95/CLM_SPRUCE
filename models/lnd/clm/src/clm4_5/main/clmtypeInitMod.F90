@@ -208,7 +208,7 @@ contains
     call init_pft_cstate_type(begp, endp, pcs)
     call init_pft_cstate_type(begc, endc, pcs_a)
     
-    if ( use_c13 ) then       
+    if ( .true. ) then   ! always allocate (was: use_c13); unguarded isotope code elsewhere segfaults when use_c13=.false.
        call init_pft_cstate_type(begp, endp, pc13s)
        call init_pft_cstate_type(begc, endc, pc13s_a)
 #ifdef CROP
@@ -216,7 +216,7 @@ contains
 #endif
     endif
 
-    if ( use_c14 ) then
+    if ( .true. ) then   ! always allocate (was: use_c14); unguarded isotope code elsewhere segfaults when use_c14=.false.
        call init_pft_cstate_type(begp, endp, pc14s)
        call init_pft_cstate_type(begc, endc, pc14s_a)
 #ifdef CROP
@@ -247,12 +247,12 @@ contains
     call init_pft_cflux_type(begp, endp, pcf)
     call init_pft_cflux_type(begc, endc, pcf_a)
     
-    if ( use_c13 ) then       
+    if ( .true. ) then   ! always allocate (was: use_c13); unguarded isotope code elsewhere segfaults when use_c13=.false.
        call init_pft_cflux_type(begp, endp, pc13f)
        call init_pft_cflux_type(begc, endc, pc13f_a)
     endif
     
-    if ( use_c14 ) then
+    if ( .true. ) then   ! always allocate (was: use_c14); unguarded isotope code elsewhere segfaults when use_c14=.false.
        call init_pft_cflux_type(begp, endp, pc14f)
        call init_pft_cflux_type(begc, endc, pc14f_a)
     endif
@@ -294,11 +294,11 @@ contains
 
     call init_column_cstate_type(begc, endc, ccs)
     
-    if ( use_c13 ) then       
+    if ( .true. ) then   ! always allocate (was: use_c13); unguarded isotope code elsewhere segfaults when use_c13=.false.
        call init_column_cstate_type(begc, endc, cc13s)
     endif
 
-    if ( use_c14 ) then       
+    if ( .true. ) then   ! always allocate (was: use_c14); unguarded isotope code elsewhere segfaults when use_c14=.false.
        call init_column_cstate_type(begc, endc, cc14s)
     endif
 
@@ -318,11 +318,11 @@ contains
 
     call init_column_cflux_type(begc, endc, ccf)
     
-    if ( use_c13 ) then       
+    if ( .true. ) then   ! always allocate (was: use_c13); unguarded isotope code elsewhere segfaults when use_c13=.false.
        call init_column_cflux_type(begc, endc, cc13f)
     endif
     
-    if ( use_c14 ) then       
+    if ( .true. ) then   ! always allocate (was: use_c14); unguarded isotope code elsewhere segfaults when use_c14=.false.
        call init_column_cflux_type(begc, endc, cc14f)
     endif
 
@@ -335,10 +335,10 @@ contains
      !column microbial variables at column level
      call init_column_microbe_type(begc, endc, cmic)
      
-     if (use_c13) then
+     if ( .true. ) then   ! always allocate (was: use_c13); unguarded isotope code elsewhere segfaults when use_c13=.false.
     call init_column_microbe_type(begc, endc, cmicc13)
      end if
-     if (use_c14) then
+     if ( .true. ) then   ! always allocate (was: use_c14); unguarded isotope code elsewhere segfaults when use_c14=.false.
     call init_column_microbe_type(begc, endc, cmicc14)
      end if    
 #endif
@@ -1108,7 +1108,7 @@ contains
     ! 4/14/05: PET
     ! Adding isotope code
     
-    if ( use_c13 ) then       
+    if ( .true. ) then   ! always allocate (was: use_c13); unguarded isotope code elsewhere segfaults when use_c13=.false.
        allocate(pps%alphapsnsun(beg:end))
        allocate(pps%alphapsnsha(beg:end))
     endif
@@ -1243,7 +1243,7 @@ contains
     !!!pps%cisun(beg:end) = spval
     !!!pps%cisha(beg:end) = spval
     
-    if ( use_c13 ) then       
+    if ( .true. ) then   ! always allocate (was: use_c13); unguarded isotope code elsewhere segfaults when use_c13=.false.
        pps%alphapsnsun(beg:end) = spval
        pps%alphapsnsha(beg:end) = spval
     endif
@@ -1317,7 +1317,7 @@ contains
     allocate(pepv%gpp(beg:end))
     allocate(pepv%availc(beg:end))
     allocate(pepv%xsmrpool_recover(beg:end))
-    if ( use_c13 ) then
+    if ( .true. ) then   ! always allocate (was: use_c13); unguarded isotope code elsewhere segfaults when use_c13=.false.
        allocate(pepv%xsmrpool_c13ratio(beg:end))
     endif
     allocate(pepv%alloc_pnow(beg:end))
@@ -1341,13 +1341,13 @@ contains
     allocate(pepv%tempsum_litfall(beg:end))
     allocate(pepv%annsum_litfall(beg:end))
 #endif
-    if ( use_c13 ) then
+    if ( .true. ) then   ! always allocate (was: use_c13); unguarded isotope code elsewhere segfaults when use_c13=.false.
        allocate(pepv%rc13_canair(beg:end))
        allocate(pepv%rc13_psnsun(beg:end))
        allocate(pepv%rc13_psnsha(beg:end))
     endif
     
-    if ( use_c14 ) then
+    if ( .true. ) then   ! always allocate (was: use_c14); unguarded isotope code elsewhere segfaults when use_c14=.false.
        allocate(pepv%rc14_atm(beg:end))
     endif
 
@@ -1375,7 +1375,7 @@ contains
     pepv%gpp(beg:end) = nan
     pepv%availc(beg:end) = nan
     pepv%xsmrpool_recover(beg:end) = nan
-    if ( use_c13 ) then
+    if ( .true. ) then   ! always allocate (was: use_c13); unguarded isotope code elsewhere segfaults when use_c13=.false.
        pepv%xsmrpool_c13ratio(beg:end) = nan
     endif
     pepv%alloc_pnow(beg:end) = nan
@@ -1399,13 +1399,13 @@ contains
     pepv%tempsum_litfall(beg:end) = nan
     pepv%annsum_litfall(beg:end) = nan
 #endif
-    if ( use_c13 ) then
+    if ( .true. ) then   ! always allocate (was: use_c13); unguarded isotope code elsewhere segfaults when use_c13=.false.
        pepv%rc13_canair(beg:end) = spval
        pepv%rc13_psnsun(beg:end) = spval
        pepv%rc13_psnsha(beg:end) = spval
     endif
 
-    if ( use_c14 ) then
+    if ( .true. ) then   ! always allocate (was: use_c14); unguarded isotope code elsewhere segfaults when use_c14=.false.
        pepv%rc14_atm(beg:end) = nan
        ! pepv%rc14_canair(beg:end) = nan
        ! pepv%rc14_psnsun(beg:end) = nan

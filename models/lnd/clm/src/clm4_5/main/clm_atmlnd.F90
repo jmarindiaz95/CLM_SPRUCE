@@ -201,7 +201,7 @@ contains
   allocate(a2l%forc_snow(beg:end))
   allocate(a2l%forc_ndep(beg:end))
   allocate(a2l%rainf(beg:end))
-  if ( use_c13 ) then
+  if ( .true. ) then   ! always allocate (was: use_c13)
      allocate(a2l%forc_pc13o2(beg:end))
   endif
   allocate(a2l%forc_po2(beg:end))
@@ -254,7 +254,7 @@ contains
   a2l%forc_snow(beg:end) = ival
   a2l%forc_ndep(beg:end) = ival
   a2l%rainf(beg:end) = nan
-  if ( use_c13 ) then
+  if ( .true. ) then   ! always allocate (was: use_c13)
      a2l%forc_pc13o2(beg:end) = ival
   endif
   a2l%forc_po2(beg:end) = ival
