@@ -389,8 +389,8 @@ subroutine clm_drv(doalb, nextsw_cday, declinp1, declin, rstwr, nlend, rdate)
 
 #if (defined CN)
      call t_startf('begcnbal')
-     !call BeginCBalance(begc, endc, filter(nc)%num_soilc, filter(nc)%soilc)
-     !call BeginNBalance(begc, endc, filter(nc)%num_soilc, filter(nc)%soilc)
+     call BeginCBalance(begc, endc, filter(nc)%num_soilc, filter(nc)%soilc)
+     call BeginNBalance(begc, endc, filter(nc)%num_soilc, filter(nc)%soilc)
      call t_stopf('begcnbal')
 #endif
 
@@ -692,8 +692,8 @@ subroutine clm_drv(doalb, nextsw_cday, declinp1, declin, rstwr, nlend, rdate)
         if (masterproc) write(iulog,*) '--WARNING-- skipping CN balance check for first timestep'
      else
         call t_startf('cnbalchk')
-        !call CBalanceCheck(begc, endc, filter(nc)%num_soilc, filter(nc)%soilc)
-        !!call NBalanceCheck(begc, endc, filter(nc)%num_soilc, filter(nc)%soilc)
+        call CBalanceCheck(begc, endc, filter(nc)%num_soilc, filter(nc)%soilc)
+        call NBalanceCheck(begc, endc, filter(nc)%num_soilc, filter(nc)%soilc)
         call t_stopf('cnbalchk')
      end if
 #endif

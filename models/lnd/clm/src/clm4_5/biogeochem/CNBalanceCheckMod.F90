@@ -15,6 +15,7 @@ module CNBalanceCheckMod
     use shr_kind_mod, only: r8 => shr_kind_r8
     use clm_varctl  , only: iulog
     implicit none
+  integer, save :: nwarn_c = 0, nwarn_n = 0   ! number of time steps with a C / N balance error
     save
     private
 ! !PUBLIC MEMBER FUNCTIONS:
@@ -272,7 +273,8 @@ subroutine CBalanceCheck(lbc, ubc, num_soilc, filter_soilc)
       
    end do ! end of columns loop
    
-   if (err_found) then
+   if (err_found) nwarn_c = nwarn_c + 1
+   if (err_found .and. nwarn_c <= 20) then   ! log the first 20 only; CBAL_ERR history field has the rest
       c = err_index
       write(iulog,*)'column cbalance error = ', col_errcb(c), c
       write(iulog,*)'Latdeg,Londeg=',grc%latdeg(col%gridcell(c)),grc%londeg(col%gridcell(c))
@@ -427,7 +429,8 @@ subroutine NBalanceCheck(lbc, ubc, num_soilc, filter_soilc)
       
    end do ! end of columns loop
    
-   if (err_found) then
+   if (err_found) nwarn_n = nwarn_n + 1
+   if (err_found .and. nwarn_n <= 20) then   ! log the first 20 only; NBAL_ERR history field has the rest
       c = err_index
       write(iulog,*)'column nbalance error = ', col_errnb(c), c
       write(iulog,*)'Latdeg,Londeg=',grc%latdeg(col%gridcell(c)),grc%londeg(col%gridcell(c))

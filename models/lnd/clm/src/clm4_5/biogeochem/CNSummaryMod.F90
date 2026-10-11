@@ -360,6 +360,7 @@ subroutine CSummary(num_soilc, filter_soilc, num_soilp, filter_soilp, isotope)
 #ifdef MICROBE
 real(r8), pointer :: cmicbiocs(:,:) 
 real(r8), pointer :: cdocs(:,:)   
+real(r8), pointer :: cdocs_pre(:,:)
 real(r8), pointer :: cmicbions(:,:) 
 real(r8), pointer :: cdons(:,:) 
 real(r8), pointer :: cdons_min(:,:)                 ! nitrogen mineralization from don
@@ -718,6 +719,7 @@ real(r8), pointer :: mic_fch4_col(:)
 #ifdef MICROBE
    cmicbiocs           			=> cmic%cmicbiocs
    cdocs           				=> cmic%cdocs
+   cdocs_pre       				=> cmic%cdocs_pre
    cmicbions           			=> cmic%cmicbions
    cdons           				=> cmic%cdons
    cdons_min           			=> cmic%cdons_min
@@ -1197,10 +1199,12 @@ real(r8), pointer :: mic_fch4_col(:)
    end do
 
 #ifdef MICROBE
+      dtime = get_step_size()
       do j = 1,nlevdecomp
          do fc = 1,num_soilc
             c = filter_soilc(fc)
-	    dochr_col(c) = dochr_col(c) + cdons_min(c,j) * cn_dom *dzsoi_decomp(j)   
+	    ! DOC consumed by the CH4 module this step (to acetate, CH4, CO2), gC/m2/s
+	    dochr_col(c) = dochr_col(c) + (cdocs_pre(c,j) - cdocs(c,j)) * dzsoi_decomp(j) / dtime
 	    !write(iulog,*) "dochr_col: ", dochr_col(c)
 	 end do
       end do
@@ -1231,7 +1235,13 @@ real(r8), pointer :: mic_fch4_col(:)
    do fc = 1,num_soilc
       c = filter_soilc(fc)
 #ifdef MICROBE
-      hr(c) = micbiohr_col(c) + lithr(c) !+ dochr_col(c) !+ somhr(c)
+      ! all cascade respiration (litter, SOM, microbes, DOM donors) + DOC consumed by the CH4 module;
+      ! original: micbiohr_col + lithr, which left SOM respiration and CH4-module C out of HR/ER/NEE
+      hr(c) = 0._r8
+      if (isotope == 'bulk') hr(c) = dochr_col(c)   ! dochr_col is computed from bulk DOC
+      do k = 1, ndecomp_cascade_transitions
+         hr(c) = hr(c) + decomp_cascade_hr(c,k)
+      end do
 #else
       hr(c) = lithr(c) + somhr(c)
 #endif

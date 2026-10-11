@@ -371,6 +371,7 @@ implicit none
 	real(r8), pointer :: froot_r(:,:)
 	
 	real(r8), pointer :: sminn_vr(:,:)
+	real(r8), pointer :: smin_nh4_vr(:,:)
 
 	real(r8), pointer :: sucsat(:,:)        		! minimum soil suction (mm)
 	real(r8), pointer :: soilpsi(:,:)        		! soil water potential in each soil layer (MPa)
@@ -440,6 +441,7 @@ implicit none
 
 ! !OTHER LOCAL VARIABLES:
 	integer :: fc,c,g,j,fp,p,l               ! indices
+	real(r8) :: dn_dom                       ! DON N moved to/from mineral N (gN/m3)
 !	real(r8) :: rootfraction(lbp:ubp, 1:nlevgrnd) 
 	real(r8) :: pHeffect = 1.
 	real(r8) :: ACConcentration = 0.
@@ -708,6 +710,7 @@ implicit none
 	waterhead_unsat   			=> cmiciso%waterhead_unsat
    	
 	sminn_vr                       		=> cns%sminn_vr
+	smin_nh4_vr                    		=> cns%smin_nh4_vr
 	hr_vr					=> ccf%hr_vr
 	roothr					=> pcf%rr
 	froot_mr					=> pcf%froot_mr
@@ -827,6 +830,7 @@ implicit none
 ! vertically distributed root respiration
 	roothr_vr(:,:) = 0._r8
 	rootfraction(:,:)=0.0_r8
+	if (fix_co2_dt) froot_r(:,:) = 0._r8   ! original code never reset this accumulator
 	do fp = 1, num_soilc
 		c = filter_soilc(fp)
 		roothr_vr(c,:) = 0.0_r8
@@ -844,7 +848,7 @@ implicit none
 		froot_r(c,j) = froot_r(c,j) + froot_mr(p)*rootfr_vr(p,j)*wtcol(p)
 		rootfraction(c,j) = rootfraction(c,j) + rootfr_vr(p,j)*wtcol(p)
 !		write(iulog,*) "837 line: roothr_vr(c,j)",j, " j ", roothr_vr(c,j), "roothr(p)", roothr(p), "rootfr_vr(p,j)", rootfr_vr(p,j), "wtcol(p)", wtcol(p), "rootfraction(c,j)", rootfraction(c,j), ccon_co2s_sat(c,j),froot_r(c,j),hr_vr(c,j)
-		ccon_co2s_sat(c,j) = ccon_co2s_sat(c,j) + froot_r(c,j) / 12.0 + hr_vr(c,j) / 12.0
+		if (.not. fix_co2_dt) ccon_co2s_sat(c,j) = ccon_co2s_sat(c,j) + froot_r(c,j) / 12.0 + hr_vr(c,j) / 12.0
 		
                !~ anpp = annsum_npp(p) ! g C / m^2/yr
                !~ anpp = max(anpp, 0._r8) ! NPP can be negative b/c of consumption of storage pools
@@ -858,6 +862,17 @@ implicit none
 	        end if
 		end do
 	end do
+	! Corrected CO2 source to the saturated soil CO2 pool: root MR + heterotrophic respiration,
+	! gC/m3/s -> mol/m3 per time step (original code added the rate without dt, inside the pft
+	! loop, from an accumulator that was never reset).
+	if (fix_co2_dt) then
+	do j=1,nlevsoi
+		do fc = 1,num_soilc
+		c = filter_soilc(fc)
+		ccon_co2s_sat(c,j) = ccon_co2s_sat(c,j) + (froot_r(c,j) + hr_vr(c,j)) / 12.0_r8 * dt
+		end do
+	end do
+	end if
 		
 ! end of root respiration
 		
@@ -2553,8 +2568,25 @@ end do
                c = filter_soilc(fc)
 !	      write(iulog,*) "microbial mod: ",decomp_cpools_vr(c,j,i_dom), cdocs(c,j), decomp_npools_vr(c,j,i_dom), cdons(c,j)
 !      cdons_min(c,j) = cdons_min(c,j) + decomp_npools_vr(c,j,i_dom) - (cdocs(c,j)) / cn_dom
-      decomp_cpools_vr(c,j,i_dom) = (cdocs(c,j)) ! gC/m3
-      decomp_npools_vr(c,j,i_dom) = (cdocs(c,j)) / cn_dom
+      if (isotope == 'bulk') decomp_cpools_vr(c,j,i_dom) = (cdocs(c,j)) ! gC/m3
+      if (isotope /= 'bulk') then
+         ! decomp_cpools_vr/decomp_npools_vr point to the BULK pools (ccs/cns) even in the
+         ! c13/c14 calls; writing back here made each isotope call consume bulk DOC again.
+      else if (fix_dom_n) then
+         ! Keep DON at DOC/cn_dom, but move the N difference to/from mineral N instead of
+         ! creating or destroying it (original code reset DON with no counterpart).
+         dn_dom = decomp_npools_vr(c,j,i_dom) - cdocs(c,j) / cn_dom   ! >0: DON N released
+#if (defined NITRIF_DENITRIF)
+         dn_dom = max(dn_dom, -max(smin_nh4_vr(c,j), 0._r8))
+         smin_nh4_vr(c,j) = smin_nh4_vr(c,j) + dn_dom
+#else
+         dn_dom = max(dn_dom, -max(sminn_vr(c,j), 0._r8))
+#endif
+         sminn_vr(c,j) = sminn_vr(c,j) + dn_dom
+         decomp_npools_vr(c,j,i_dom) = decomp_npools_vr(c,j,i_dom) - dn_dom
+      else
+         decomp_npools_vr(c,j,i_dom) = (cdocs(c,j)) / cn_dom
+      end if
            end do
       end do
       

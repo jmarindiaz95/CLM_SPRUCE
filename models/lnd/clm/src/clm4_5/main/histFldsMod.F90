@@ -5230,6 +5230,20 @@ end if
          avgflag='A', long_name='soil organic matter heterotrophic respiration', &
          ptr_col=ccf%somhr)
 
+    call hist_addfld1d (fname='CBAL_ERR', units='gC/m^2 per timestep', &
+         avgflag='A', long_name='column carbon balance error (inputs - outputs - storage change)', &
+         ptr_col=ccbal%errcb)
+
+    call hist_addfld1d (fname='NBAL_ERR', units='gN/m^2 per timestep', &
+         avgflag='A', long_name='column nitrogen balance error (inputs - outputs - storage change)', &
+         ptr_col=cnbal%errnb)
+
+#if (defined MICROBE)
+    call hist_addfld1d (fname='DOC_CH4MOD_LOSS', units='gC/m^2/s', &
+         avgflag='A', long_name='DOC consumed by the microbial CH4 module (included in HR)', &
+         ptr_col=ccs%dochr_col)
+#endif
+
     if ( nlevdecomp_full .gt. 1 ) then
        call hist_addfld2d (fname='HR_vr', units='gC/m^3/s', type2d='levdcmp', &
             avgflag='A', long_name='total vertically resolved heterotrophic respiration', &

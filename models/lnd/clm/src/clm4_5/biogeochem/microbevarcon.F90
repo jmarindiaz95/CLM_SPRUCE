@@ -245,6 +245,9 @@ module microbevarcon
 	real(r8) :: pHopt = 7.
   
 	real(r8) :: dom_diffus = 10. / 3600. / 365.
+	! Bug-fix switches (optional trailing lines in microbepar_in: "fix_dom_n 1", "fix_co2_dt 1"; 0 = original code)
+	logical :: fix_dom_n = .true.    ! conserve N when DON is reset to DOC/cn_dom
+	logical :: fix_co2_dt = .true.   ! respiration CO2 source to soil CO2 pool: per time step, accumulator reset
 	real(r8) :: m_Fick_ad = 0.75
 	  
 !
@@ -295,6 +298,8 @@ contains
     character(len=40) :: ch4parname(nummicrobepar)  ! subroutine name
     character(LEN=256)::locfn='./microbepar_in'
     character(len=40) :: expected_names(86)
+    character(len=40) :: swname
+    real(r8) :: swval
 !-----------------------------------------------------------------------
 
 real(r8)::dummy(nummicrobepar)
@@ -309,6 +314,13 @@ real(r8)::dummy(nummicrobepar)
        write(iulog, *) 'error in reading in microbepar_in'
        call endrun()
        end if
+       end do
+       ! optional switch lines after the nummicrobepar entries
+       do
+          read(unitn, *, IOSTAT=ierr) swname, swval
+          if (ierr /= 0) exit
+          if (trim(adjustl(swname)) == 'fix_dom_n')  fix_dom_n  = (swval > 0.5_r8)
+          if (trim(adjustl(swname)) == 'fix_co2_dt') fix_co2_dt = (swval > 0.5_r8)
        end do
        call relavu( unitn )
 
@@ -544,6 +556,8 @@ end if
     call mpi_bcast (frac_ch4aom, 1 , MPI_REAL8, 0, mpicom, ierr)
     	
     call mpi_bcast (dom_diffus, 1 , MPI_REAL8, 0, mpicom, ierr)
+    call mpi_bcast (fix_dom_n, 1 , MPI_LOGICAL, 0, mpicom, ierr)
+    call mpi_bcast (fix_co2_dt, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (m_Fick_ad, 1 , MPI_REAL8, 0, mpicom, ierr)
     call mpi_bcast (m_dPlantTrans, 1 , MPI_REAL8, 0, mpicom, ierr)
     
@@ -645,6 +659,8 @@ end if
 	write(iulog,*)'frac_ch4aom = ', frac_ch4aom
 	
 	write(iulog,*)'dom_diffus = ', dom_diffus
+	write(iulog,*)'fix_dom_n = ', fix_dom_n
+	write(iulog,*)'fix_co2_dt = ', fix_co2_dt
 	
 	write(iulog,*)'m_dPlantTrans = ', m_dPlantTrans
 	
