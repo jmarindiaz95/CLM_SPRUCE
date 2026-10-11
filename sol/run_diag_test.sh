@@ -60,6 +60,8 @@ grep -q "hist_dov2xy *= *.false." $R/lnd_in || { echo "ERROR: hist_dov2xy not in
 grep -q "fix_dom_n" $R/microbepar_in || { echo "ERROR: microbepar_in has no fix_dom_n line"; exit 1; }
 
 # 4. one run directory per test
+# when this runs inside a batch job, drop its SLURM_* variables so the new jobs do not inherit them
+for v in $(env | grep -o '^SLURM_[A-Za-z_]*'); do unset $v; done
 for T in fixon fixoff; do
   D=$W/runs/diag_$T
   rm -rf $D; mkdir -p $D
