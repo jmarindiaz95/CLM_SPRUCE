@@ -3,7 +3,7 @@
 #   fixon : fix_dom_n=1, fix_co2_dt=1  (N-conserving DON reset, corrected CO2 source)
 #   fixoff: fix_dom_n=0, fix_co2_dt=0  (original microbial dynamics)
 # Both have the HR bookkeeping fix and the C/N balance checks (CBAL_ERR, NBAL_ERR, DOC_CH4MOD_LOSS).
-# Usage (login node, any shell):  bash /scratch/jmarindi/elm_work/CLM_SPRUCE/sol/run_diag_test.sh
+# Usage: sbatch sol/submit_diag_build.sh (builds on a compute node; login nodes kill the compile)
 set -e
 module purge
 module load intel-oneapi-compilers-2022.1.0-gcc-11.2.0 intel-oneapi-mpi-2021.10.0-gcc-12.1.0 \
