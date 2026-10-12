@@ -77,12 +77,13 @@ for pat, kind in streams:
         d['lat'][:] = [LAT - 0.0005, LAT + 0.0005]
         d['lon'][:] = LON - 0.105   # same offset as the US-SPR file; a source lon equal to the gridcell lon gives dx=dy=0 in shr_map_getWts
     else:
-        for v in ['lat', 'LAT']:
-            if v in d.variables: d[v][:] = LAT
-        for v in ['lon', 'LON']:
-            if v in d.variables: d[v][:] = LON if d[v][:].max() > 180 else LON - 360.0
-        if 'LATIXY' in d.variables: d['LATIXY'][:] = LAT
-        if 'LONGXY' in d.variables: d['LONGXY'][:] = LON if d['LONGXY'][:].max() > 180 else LON - 360.0
+        # keep the template's offset from the US-SPR gridcell (an exact match gives dx=dy=0 in shr_map_getWts)
+        for v in ['lat', 'LAT', 'LATIXY']:
+            if v in d.variables: d[v][:] = LAT + (float(np.array(d[v][:]).ravel()[0]) - 47.563)
+        for v in ['lon', 'LON', 'LONGXY']:
+            if v in d.variables:
+                x0 = float(np.array(d[v][:]).ravel()[0]); x0e = x0 % 360.0
+                d[v][:] = (LON + (x0e - 266.562)) - (360.0 if x0 < 0 else 0.0)
     d.history = 'PE-QFR placeholder: values from US-SPR, coordinates changed (sol/make_qui_static.py)'
     d.close()
 
