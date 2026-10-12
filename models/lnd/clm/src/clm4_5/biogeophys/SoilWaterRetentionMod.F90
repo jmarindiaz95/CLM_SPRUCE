@@ -28,7 +28,9 @@ module SoilWaterRetentionMod
   public :: vg_vol_eq     ! layer-mean water content at hydrostatic equilibrium with the water table
   public :: vg_sy         ! specific yield for a water table at depth zwt (m)
 
-  real(r8), parameter :: se_min = 1.e-3_r8     ! lower limit of effective saturation
+  real(r8), parameter :: se_low = 0.05_r8      ! below this effective saturation smp is extended linearly in Se
+                                               ! (finite slope; the initial and dry states can sit below theta_res,
+                                               ! where the VG slope becomes so large that the implicit solver freezes)
   real(r8), parameter :: se_dmax = 0.99_r8     ! upper limit used in the derivative (VG slope is infinite at Se = 1)
 
 contains
@@ -38,30 +40,44 @@ contains
     theta_r = min(vg_theta_res, 0.9_r8*watsat)   ! keep theta_res below porosity in mineral layers
   end function theta_r
 
-  pure real(r8) function vg_se(theta, watsat)
+  pure real(r8) function vg_se_raw(theta, watsat)
     real(r8), intent(in) :: theta, watsat
     real(r8) :: tr
     tr = theta_r(watsat)
-    vg_se = (theta - tr) / (watsat - tr)
-    vg_se = min(1._r8, max(se_min, vg_se))
-  end function vg_se
+    vg_se_raw = min(1._r8, (theta - tr) / (watsat - tr))
+  end function vg_se_raw
+
+  pure real(r8) function smp_of_se(se)          ! VG curve (SI Eq. 1), se in [se_low, 1]
+    real(r8), intent(in) :: se
+    real(r8) :: m
+    m = 1._r8 - 1._r8/vg_n
+    smp_of_se = -10._r8 * (max(se**(-1._r8/m) - 1._r8, 0._r8) / vg_alpha)**(1._r8/vg_n)
+  end function smp_of_se
+
+  pure real(r8) function dsmp_dse(se)           ! d(smp)/d(Se) of the VG curve, se in [se_low, se_dmax]
+    real(r8), intent(in) :: se
+    real(r8) :: m, x
+    m = 1._r8 - 1._r8/vg_n
+    x = se**(-1._r8/m) - 1._r8
+    dsmp_dse = 10._r8 / (vg_alpha * vg_n * m) * (x/vg_alpha)**(1._r8/vg_n - 1._r8) * se**(-1._r8/m - 1._r8)
+  end function dsmp_dse
 
   pure real(r8) function vg_smp(theta, watsat)
     real(r8), intent(in) :: theta, watsat
-    real(r8) :: se, m
-    m  = 1._r8 - 1._r8/vg_n
-    se = vg_se(theta, watsat)
-    vg_smp = -10._r8 * (max(se**(-1._r8/m) - 1._r8, 0._r8) / vg_alpha)**(1._r8/vg_n)
+    real(r8) :: se
+    se = vg_se_raw(theta, watsat)
+    if (se >= se_low) then
+       vg_smp = smp_of_se(se)
+    else
+       vg_smp = smp_of_se(se_low) + dsmp_dse(se_low) * (se - se_low)
+    end if
   end function vg_smp
 
   pure real(r8) function vg_dsmpdw(theta, watsat)
     real(r8), intent(in) :: theta, watsat
-    real(r8) :: se, m, x, tr
-    m  = 1._r8 - 1._r8/vg_n
-    tr = theta_r(watsat)
-    se = min(vg_se(theta, watsat), se_dmax)
-    x  = se**(-1._r8/m) - 1._r8
-    vg_dsmpdw = 10._r8 / (vg_alpha * vg_n * m) * (x/vg_alpha)**(1._r8/vg_n - 1._r8) * se**(-1._r8/m - 1._r8) / (watsat - tr)
+    real(r8) :: se
+    se = max(se_low, min(vg_se_raw(theta, watsat), se_dmax))
+    vg_dsmpdw = dsmp_dse(se) / (watsat - theta_r(watsat))
   end function vg_dsmpdw
 
   pure real(r8) function vg_theta(suction_mm, watsat)

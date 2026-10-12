@@ -11,7 +11,7 @@ module mkarbinitMod
 
 ! !USES:
     use shr_kind_mod , only : r8 => shr_kind_r8
-    use clm_varctl   , only : iulog, use_vg_retention
+    use clm_varctl   , only : iulog, use_vg_retention, vg_theta_res
   use SoilWaterRetentionMod, only : vg_smp
     use shr_sys_mod  , only : shr_sys_flush
     use spmdMod      , only : masterproc
@@ -505,6 +505,8 @@ contains
                    h2osoi_vol(c,j) = 0.0_r8
                 else
                    h2osoi_vol(c,j) = 0.15_r8
+                   ! van Genuchten peat: start halfway between residual and saturated water content (the default 0.15 is below theta_res)
+                   if (use_vg_retention) h2osoi_vol(c,j) = min(vg_theta_res, 0.9_r8*watsat(c,j)) + 0.5_r8*(watsat(c,j) - min(vg_theta_res, 0.9_r8*watsat(c,j)))
                 endif
              end do
           else if (ltype(l) == isturb) then 
