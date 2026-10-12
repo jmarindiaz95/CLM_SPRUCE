@@ -1,0 +1,10 @@
+source: /mnt/user-data/uploads/EddyCovariance-Analysis/elm_forcing/PE-QFR_forcing_input_2018-2019.csv
+columns used: {'TA': ['TA'], 'RH': ['RH'], 'PA': ['PA'], 'WS': ['WS'], 'SW_IN': ['SW_IN'], 'LW_IN': ['LW_IN'], 'P': ['P']}
+period (UTC): 2018-01-01 00:00:00 to 2019-12-31 23:30:00, 35040 half-hours
+
+LW_IN: tower, 10 half-hours from Brutsaert + cloud model
+P: 10 half-hour gaps set to 0 (no --era5 given)
+
+initial gap fraction: TA 0.0%, RH 0.0%, PA 0.0%, WS 0.0%, SW_IN 0.0%, LW_IN 0.0%, P 0.0%
+2018: P 2934 mm, mean TA 25.67 C, SW 155.5 W/m2, LW 418.1 W/m2, RH 89.9 %, WS 1.16 m/s
+2019: P 2773 mm, mean TA 25.70 C, SW 165.8 W/m2, LW 419.8 W/m2, RH 91.2 %, WS 1.23 m/s
