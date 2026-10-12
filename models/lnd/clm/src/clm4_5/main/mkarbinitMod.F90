@@ -11,7 +11,8 @@ module mkarbinitMod
 
 ! !USES:
     use shr_kind_mod , only : r8 => shr_kind_r8
-    use clm_varctl   , only : iulog
+    use clm_varctl   , only : iulog, use_vg_retention
+  use SoilWaterRetentionMod, only : vg_smp
     use shr_sys_mod  , only : shr_sys_flush
     use spmdMod      , only : masterproc
 
@@ -564,6 +565,7 @@ contains
                 if (h2osoi_liq(c,j) > 0._r8) then
                    vwc = h2osoi_liq(c,j)/(dz(c,j)*denh2o)
                    psi = sucsat(c,j) * (-9.8e-6_r8) * (vwc/watsat(c,j))**(-bsw(c,j))  ! Mpa
+                   if (use_vg_retention) psi = 9.8e-6_r8 * vg_smp(vwc, watsat(c,j))
                    soilpsi(c,j) = max(psi, -15.0_r8)
                    soilpsi(c,j) = min(soilpsi(c,j),0.0_r8)
                 end if

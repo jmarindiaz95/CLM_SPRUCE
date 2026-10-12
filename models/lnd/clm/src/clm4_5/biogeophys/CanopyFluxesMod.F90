@@ -12,7 +12,8 @@ module CanopyFluxesMod
 !
 ! !USES:
    use abortutils     , only: endrun
-   use clm_varctl     , only: iulog
+   use clm_varctl     , only: iulog, use_vg_retention
+  use SoilWaterRetentionMod, only : vg_smp, vg_theta
    use shr_sys_mod    , only: shr_sys_flush
    use clm_varctl     , only: use_c13, use_c14
 !
@@ -744,6 +745,7 @@ contains
          else
             s_node = max(vol_liq/eff_porosity,0.01_r8)
             smp_node = max(smpsc(ivt(p)), -sucsat(c,j)*s_node**(-bsw(c,j)))
+            if (use_vg_retention) smp_node = max(smpsc(ivt(p)), vg_smp(s_node*watsat(c,j), watsat(c,j)))
 
             rresis(p,j) = min( (eff_porosity/watsat(c,j))* &
                           (smp_node - smpsc(ivt(p))) / (smpso(ivt(p)) - smpsc(ivt(p))), 1._r8)
@@ -754,6 +756,7 @@ contains
             end if
             btran(p)    = btran(p) + rootr(p,j)
             smp_node_lf = max(smpsc(ivt(p)), -sucsat(c,j)*(h2osoi_vol(c,j)/watsat(c,j))**(-bsw(c,j))) 
+            if (use_vg_retention) smp_node_lf = max(smpsc(ivt(p)), vg_smp(h2osoi_vol(c,j), watsat(c,j)))
             btran2(p)   = btran2(p) +rootfr(p,j)*min((smp_node_lf - smpsc(ivt(p))) / (smpso(ivt(p)) - smpsc(ivt(p))), 1._r8)
          endif 
       end do
@@ -820,6 +823,7 @@ contains
                vol_ice      = min(watsat(c,j), h2osoi_ice(c,j)/(dz(c,j)*denice))  ! this duplicates the above equation for vol_ice
                eff_porosity = watsat(c,j)-vol_ice  ! this duplicates the above equation for eff_porosity
                vol_liq_so   = eff_porosity * (-smpso(ivt(p))/sucsat(c,j))**(-1/bsw(c,j))
+               if (use_vg_retention) vol_liq_so = eff_porosity * vg_theta(-smpso(ivt(p)), watsat(c,j)) / watsat(c,j)
 
                ! Translate vol_liq_so and eff_porosity into h2osoi_liq_so and h2osoi_liq_sat and calculate deficit
                h2osoi_liq_so  = vol_liq_so * denh2o * dz(c,j)
@@ -1415,7 +1419,9 @@ contains
 #if (defined CN)
    use CNAllocationMod, only : CNAllocation_Carbon_only
 #endif
-   implicit none
+      use clm_varctl  , only : use_seasonal_leafcn, leafcn_amp, leafcn_m0, leafcn_width
+   use clm_time_manager, only : get_curr_date
+implicit none
 
 ! !ARGUMENTS:
    integer , intent(in)    :: fn                   ! size of pft filter
@@ -1483,6 +1489,8 @@ contains
 
    logical,pointer  :: c3flag(:)! true if C3 and false if C4
    real(r8) :: lnc(lbp:ubp)   ! leaf N concentration (gN leaf/m^2)
+   real(r8) :: month_frac     ! month of year with fraction (1 = mid January)
+   integer  :: yr_lcn, mon_lcn, day_lcn, tod_lcn
    real(r8),pointer :: kc(:)    ! Michaelis-Menten constant for CO2 (Pa)
    real(r8),pointer :: ko(:)    ! Michaelis-Menten constant for O2 (Pa)
    real(r8),pointer :: cp(:)    ! CO2 compensation point (Pa)
@@ -1813,6 +1821,9 @@ contains
 
    end do
 
+   call get_curr_date(yr_lcn, mon_lcn, day_lcn, tod_lcn)
+   month_frac = real(mon_lcn, r8) + (real(day_lcn, r8) - 15._r8 + real(tod_lcn, r8)/86400._r8) / 30.4_r8
+
    ! Multi-layer parameters scaled by leaf nitrogen profile.
    ! Loop through each canopy layer to calculate nitrogen profile using
    ! cumulative lai at the midpoint of the layer
@@ -1822,7 +1833,12 @@ contains
 
       ! Leaf nitrogen concentration at the top of the canopy (g N leaf / m**2 leaf)
 
+      if (use_seasonal_leafcn) then
+         ! Yuan et al. 2023 (SI Eq. 3): seasonal leaf C:N used in photosynthesis only
+         lnc(p) = 1._r8 / (slatop(ivt(p)) * leafcn_amp * exp(-(month_frac - leafcn_m0)**2 / (2._r8*leafcn_width**2)))
+      else
       lnc(p) = 1._r8 / (slatop(ivt(p)) * leafcn(ivt(p)))
+      end if
 
       ! vcmax25 at canopy top, as in CN but using lnc at top of the canopy
 

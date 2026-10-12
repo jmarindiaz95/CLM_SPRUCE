@@ -13,7 +13,8 @@ module Biogeophysics1Mod
 !
 ! !USES:
    use shr_kind_mod, only: r8 => shr_kind_r8
-   use clm_varctl  , only : iulog
+   use clm_varctl  , only : iulog, use_vg_retention
+  use SoilWaterRetentionMod, only : vg_smp, vg_theta
 !
 ! !PUBLIC TYPES:
    implicit none
@@ -370,6 +371,7 @@ contains
              fac  = min(1._r8, wx/watsat(c,1))
              fac  = max( fac, 0.01_r8 )
              psit = -sucsat(c,1) * fac ** (-bsw(c,1))
+             if (use_vg_retention) psit = vg_smp(fac*watsat(c,1), watsat(c,1))
              psit = max(smpmin(c), psit)
              ! modify qred to account for h2osfc
              hr   = exp(psit/roverg/t_soisno(c,1))

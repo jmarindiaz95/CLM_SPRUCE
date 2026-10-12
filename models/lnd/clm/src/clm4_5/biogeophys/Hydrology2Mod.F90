@@ -10,7 +10,8 @@ module Hydrology2Mod
 !
 ! !USES:
    use shr_kind_mod, only : r8 => shr_kind_r8
-   use clm_varctl,   only : iulog
+   use clm_varctl,   only : iulog, use_vg_retention
+  use SoilWaterRetentionMod, only : vg_smp, vg_theta
    use abortutils,   only : endrun
 
 ! !PUBLIC TYPES:
@@ -642,6 +643,7 @@ contains
              ! use the same contants used in the supercool so that psi for frozen soils is consistent
              fsattmp = max(vwc/watsat(c,j), 0.001_r8)
              psi = sucsat(c,j) * (-9.8e-6_r8) * (fsattmp)**(-bsw(c,j))  ! Mpa
+             if (use_vg_retention) psi = 9.8e-6_r8 * vg_smp(fsattmp*watsat(c,j), watsat(c,j))
              soilpsi(c,j) = min(max(psi,-15.0_r8),0._r8)
              
           else 
@@ -663,6 +665,7 @@ contains
           s_node = min(1.0_r8, s_node)
 
           smp_l(c,j) = -sucsat(c,j)*s_node**(-bsw(c,j))
+          if (use_vg_retention) smp_l(c,j) = vg_smp(s_node*watsat(c,j), watsat(c,j))
           smp_l(c,j) = max(smpmin(c), smp_l(c,j))
        end do
     end do
@@ -685,6 +688,7 @@ contains
           !if (z(c,j)+0.5_r8*dz(c,j) <= 0.5_r8) then
           if (z(c,j)+0.5_r8*dz(c,j) <= 0.05_r8) then
              watdry = watsat(c,j) * (316230._r8/sucsat(c,j)) ** (-1._r8/bsw(c,j))
+             if (use_vg_retention) watdry = vg_theta(316230._r8, watsat(c,j))
              rwat(c) = rwat(c) + (h2osoi_vol(c,j)-watdry) * dz(c,j)
              swat(c) = swat(c) + (watsat(c,j)    -watdry) * dz(c,j)
              rz(c) = rz(c) + dz(c,j)
@@ -699,6 +703,7 @@ contains
           stsw = swat(c)/rz(c)
        else
           watdry = watsat(c,1) * (316230._r8/sucsat(c,1)) ** (-1._r8/bsw(c,1))
+          if (use_vg_retention) watdry = vg_theta(316230._r8, watsat(c,1))
           tsw = h2osoi_vol(c,1) - watdry
           stsw = watsat(c,1) - watdry
        end if
@@ -710,6 +715,7 @@ contains
           c = filter_hydrologyc(fc)
           if (z(c,j)+0.5_r8*dz(c,j) <= 0.17_r8) then
              watdry = watsat(c,j) * (316230._r8/sucsat(c,j)) ** (-1._r8/bsw(c,j))
+             if (use_vg_retention) watdry = vg_theta(316230._r8, watsat(c,j))
              rwat(c) = rwat(c) + (h2osoi_vol(c,j)-watdry) * dz(c,j)
              swat(c) = swat(c) + (watsat(c,j)    -watdry) * dz(c,j)
              rz(c) = rz(c) + dz(c,j)
@@ -724,6 +730,7 @@ contains
           stsw = swat(c)/rz(c)
        else
           watdry = watsat(c,1) * (316230._r8/sucsat(c,1)) ** (-1._r8/bsw(c,1))
+          if (use_vg_retention) watdry = vg_theta(316230._r8, watsat(c,1))
           tsw = h2osoi_vol(c,1) - watdry
           stsw = watsat(c,1) - watdry
        end if

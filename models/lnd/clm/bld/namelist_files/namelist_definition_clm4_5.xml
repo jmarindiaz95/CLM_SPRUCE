@@ -57,6 +57,67 @@ Ending year for experimental manipulation
 Temperature manipulation during experimental period (K)
 </entry>
 
+<entry id="use_vg_retention" type="logical" category = "clm_physics"
+        group="clm_inparm" >
+van Genuchten soil water retention instead of Clapp-Hornberger (Yuan et al. 2023)
+</entry>
+
+<entry id="vg_theta_res" type="real" category = "clm_physics"
+        group="clm_inparm" >
+van Genuchten residual water content (m3/m3)
+</entry>
+
+<entry id="vg_n" type="real" category = "clm_physics"
+        group="clm_inparm" >
+van Genuchten n
+</entry>
+
+<entry id="vg_alpha" type="real" category = "clm_physics"
+        group="clm_inparm" >
+van Genuchten alpha (1/cm)
+</entry>
+
+<entry id="use_zwt_finundation" type="logical" category = "clm_physics"
+        group="clm_inparm" >
+CH4 water coverage scalar exp(-finund_k*zwt)+finund_min, capped at 1 (Yuan et al. 2023)
+</entry>
+
+<entry id="finund_k" type="real" category = "clm_physics"
+        group="clm_inparm" >
+decay coefficient of the water coverage scalar (1/m)
+</entry>
+
+<entry id="finund_min" type="real" category = "clm_physics"
+        group="clm_inparm" >
+floor of the water coverage scalar
+</entry>
+
+<entry id="use_seasonal_leafcn" type="logical" category = "clm_physics"
+        group="clm_inparm" >
+seasonal leaf C:N in photosynthesis (Yuan et al. 2023)
+</entry>
+
+<entry id="leafcn_amp" type="real" category = "clm_physics"
+        group="clm_inparm" >
+peak leaf C:N (LCN0)
+</entry>
+
+<entry id="leafcn_m0" type="real" category = "clm_physics"
+        group="clm_inparm" >
+month of peak leaf C:N
+</entry>
+
+<entry id="leafcn_width" type="real" category = "clm_physics"
+        group="clm_inparm" >
+width of the seasonal leaf C:N curve (months)
+</entry>
+
+<entry id="gapmort_off_year" type="integer" category = "clm_physics"
+        group="clm_inparm" >
+calendar year from which gap mortality is set to zero (SPRUCE default 1974)
+</entry>
+
+
 <entry id="add_co2" type="real" category = "clm_physics"
         group="clm_inparm" >
 CO2 manipulation during experimental period (K)

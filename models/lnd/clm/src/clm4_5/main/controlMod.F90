@@ -28,7 +28,9 @@ module controlMod
                             glc_topomax, glc_grid, subgridflag, &
                             use_c13, use_c14, irrigate, &
                             spinup_state, override_bgc_restart_mismatch_dump, &
-                            startyear_experiment, endyear_experiment, add_temperature, add_co2
+                            startyear_experiment, endyear_experiment, add_temperature, add_co2, &
+                            use_vg_retention, vg_theta_res, vg_n, vg_alpha, use_zwt_finundation, finund_k, finund_min, &
+                            use_seasonal_leafcn, leafcn_amp, leafcn_m0, leafcn_width, gapmort_off_year
   use CanopyFluxesMod , only : perchroot, perchroot_alt
 #if (defined LCH4) && (defined CN)
   use clm_varctl   , only : anoxia
@@ -270,6 +272,11 @@ contains
 
     namelist /clm_inparm/ &
          add_temperature, add_co2, startyear_experiment, endyear_experiment
+
+    ! tropical peatland options (Yuan et al. 2023)
+    namelist /clm_inparm/ &
+         use_vg_retention, vg_theta_res, vg_n, vg_alpha, use_zwt_finundation, finund_k, finund_min, &
+         use_seasonal_leafcn, leafcn_amp, leafcn_m0, leafcn_width, gapmort_off_year
 
 #if (defined CN)
     namelist /clm_inparm/  &
@@ -537,8 +544,22 @@ contains
     ! Experimental manipulation
     call mpi_bcast (endyear_experiment,         1, MPI_INTEGER,  0, mpicom, ier)
     call mpi_bcast (startyear_experiment,       1, MPI_INTEGER,  0, mpicom, ier)
-    call mpi_bcast (add_temperature,            1, MPI_INTEGER,  0, mpicom, ier)
-    call mpi_bcast (add_co2,                    1, MPI_INTEGER,  0, mpicom, ier)
+    call mpi_bcast (add_temperature,            1, MPI_REAL8,    0, mpicom, ier)
+    call mpi_bcast (add_co2,                    1, MPI_REAL8,    0, mpicom, ier)
+
+    ! tropical peatland options
+    call mpi_bcast (use_vg_retention,    1, MPI_LOGICAL, 0, mpicom, ier)
+    call mpi_bcast (vg_theta_res,        1, MPI_REAL8,   0, mpicom, ier)
+    call mpi_bcast (vg_n,                1, MPI_REAL8,   0, mpicom, ier)
+    call mpi_bcast (vg_alpha,            1, MPI_REAL8,   0, mpicom, ier)
+    call mpi_bcast (use_zwt_finundation, 1, MPI_LOGICAL, 0, mpicom, ier)
+    call mpi_bcast (finund_k,            1, MPI_REAL8,   0, mpicom, ier)
+    call mpi_bcast (finund_min,          1, MPI_REAL8,   0, mpicom, ier)
+    call mpi_bcast (use_seasonal_leafcn, 1, MPI_LOGICAL, 0, mpicom, ier)
+    call mpi_bcast (leafcn_amp,          1, MPI_REAL8,   0, mpicom, ier)
+    call mpi_bcast (leafcn_m0,           1, MPI_REAL8,   0, mpicom, ier)
+    call mpi_bcast (leafcn_width,        1, MPI_REAL8,   0, mpicom, ier)
+    call mpi_bcast (gapmort_off_year,    1, MPI_INTEGER, 0, mpicom, ier)
 
     ! BGC
 
@@ -760,6 +781,10 @@ contains
     end if
 
     write(iulog,*) '   spinup_state, (0 = normal mode; 1 = AD spinup)         : ', spinup_state
+    write(iulog,*) '   use_vg_retention    = ', use_vg_retention, ' theta_res, n, alpha = ', vg_theta_res, vg_n, vg_alpha
+    write(iulog,*) '   use_zwt_finundation = ', use_zwt_finundation, ' k, fmin = ', finund_k, finund_min
+    write(iulog,*) '   use_seasonal_leafcn = ', use_seasonal_leafcn, ' LCN0, M0, a = ', leafcn_amp, leafcn_m0, leafcn_width
+    write(iulog,*) '   gapmort_off_year    = ', gapmort_off_year
     if ( spinup_state .eq. 0 ) then
        write(iulog,*) '   model is currently NOT in AD spinup mode.'
     else if ( spinup_state .eq. 1 ) then

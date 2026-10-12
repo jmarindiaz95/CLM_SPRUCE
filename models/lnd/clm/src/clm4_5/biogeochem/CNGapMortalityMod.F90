@@ -41,6 +41,7 @@ subroutine CNGapMortality (num_soilc, filter_soilc, num_soilp, filter_soilp)
 ! !USES:
    use clmtype
    use clm_time_manager, only: get_days_per_year, get_curr_date
+   use clm_varctl, only: gapmort_off_year
    use clm_varcon      , only: secspday
    use pftvarcon       , only: npcropmin, r_mort
    use microbevarcon
@@ -265,7 +266,7 @@ subroutine CNGapMortality (num_soilc, filter_soilc, num_soilp, filter_soilp)
    am = r_mort
    !turn off mortality after the last land use
    call get_curr_date(kyr, kmo, kda, mcsec) 
-   if (kyr .ge. 1974) am=0.0_r8
+   if (kyr .ge. gapmort_off_year) am=0.0_r8   ! SPRUCE land-use history (default 1974)
 
    ! pft loop
    do fp = 1,num_soilp

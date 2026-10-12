@@ -8,7 +8,8 @@ module SoilHydrologyMod
 ! !DESCRIPTION:
 ! Calculate soil hydrology
 !
-  use clm_varctl    , only : iulog
+  use clm_varctl    , only : iulog, use_vg_retention
+  use SoilWaterRetentionMod, only : vg_smp, vg_dsmpdw, vg_theta, vg_vol_eq, vg_sy
   use shr_kind_mod  , only : r8 => shr_kind_r8
   use clm_varcon    , only : e_ice,denh2o, denice,rpi
 ! !PUBLIC TYPES:
@@ -1207,6 +1208,7 @@ contains
                 !smp1 = max(0._r8,smp1)
                 smp1 = max(sucsat(c,nlevsoi),smp1)
                 vwc_zwt(c) = watsat(c,nlevsoi)*(smp1/sucsat(c,nlevsoi))**(-1._r8/bsw(c,nlevsoi))
+                if (use_vg_retention) vwc_zwt(c) = vg_theta(smp1, watsat(c,nlevsoi))
                 ! for temperatures close to tfrz, limit vwc to total water content 
                 vwc_zwt(c) = min(vwc_zwt(c), 0.5*(watsat(c,nlevsoi) + h2osoi_vol(c,nlevsoi)) )
                 exit
@@ -1242,6 +1244,10 @@ contains
           endif
           zq(c,j) = -sucsat(c,j)*(max(vol_eq(c,j)/watsat(c,j),0.01_r8))**(-bsw(c,j))
           zq(c,j) = max(smpmin(c), zq(c,j))
+          if (use_vg_retention) then
+             vol_eq(c,j) = vg_vol_eq(zwtmm(c), zimm(c,j-1), zimm(c,j), watsat(c,j))
+             zq(c,j) = max(smpmin(c), vg_smp(vol_eq(c,j), watsat(c,j)))
+          end if
        end do
     end do
 
@@ -1257,6 +1263,11 @@ contains
           vol_eq(c,j+1) = min(watsat(c,j),vol_eq(c,j+1))
           zq(c,j+1) = -sucsat(c,j)*(max(vol_eq(c,j+1)/watsat(c,j),0.01_r8))**(-bsw(c,j))
           zq(c,j+1) = max(smpmin(c), zq(c,j+1))
+          if (use_vg_retention) then
+             ! layer below the soil column: mean equilibrium content between its top and the water table
+             vol_eq(c,j+1) = vg_vol_eq(zwtmm(c), zimm(c,j), zwtmm(c), watsat(c,j))
+             zq(c,j+1) = max(smpmin(c), vg_smp(vol_eq(c,j+1), watsat(c,j)))
+          end if
        end if
     end do
 
@@ -1296,6 +1307,10 @@ contains
           endif
           s_node = min(1.0_r8, s_node)
 
+          if (use_vg_retention) then
+             smp(c,j) = max(smpmin(c), vg_smp(s_node*watsat(c,j), watsat(c,j)))
+             dsmpdw(c,j) = vg_dsmpdw(s_node*watsat(c,j), watsat(c,j))
+          else
           smp(c,j) = -sucsat(c,j)*s_node**(-bsw(c,j))
           smp(c,j) = max(smpmin(c), smp(c,j))
 
@@ -1304,6 +1319,7 @@ contains
           else
              dsmpdw(c,j) = -bsw(c,j)*smp(c,j)/vwc_liq(c,j)
           endif
+          end if
 
           smp_l(c,j) = smp(c,j)
           hk_l(c,j) = hk(c,j)
@@ -1427,11 +1443,16 @@ contains
          s_node = min(1.0_r8, s_node)
 
          ! compute smp for aquifer layer
+         if (use_vg_retention) then
+            smp1 = max(smpmin(c), vg_smp(s_node*watsat(c,j), watsat(c,j)))
+            dsmpdw1 = vg_dsmpdw(s_node*watsat(c,j), watsat(c,j))
+         else
          smp1 = -sucsat(c,j)*s_node**(-bsw(c,j))
          smp1 = max(smpmin(c), smp1)
 
          ! compute dsmpdw for aquifer layer
          dsmpdw1 = -bsw(c,j)*smp1/(s_node*watsat(c,j))
+         end if
 
          ! first set up bottom layer of soil column
          den    = (zmm(c,j) - zmm(c,j-1))
@@ -1805,8 +1826,12 @@ contains
        c = filter_hydrologyc(fc)
 
 ! use analytical expression for aquifer specific yield
+       if (use_vg_retention) then
+          rous = vg_sy(zwt(c), watsat(c,nlevsoi))
+       else
        rous = watsat(c,nlevsoi) &
             * ( 1. - (1.+1.e3*zwt(c)/sucsat(c,nlevsoi))**(-1./bsw(c,nlevsoi)))
+       end if
        rous=max(rous,0.02_r8)
 
 !--  water table is below the soil column  --------------------------------------
@@ -1820,8 +1845,12 @@ contains
           if(qcharge_tot > 0.) then !rising water table
              do j = jwt(c)+1, 1,-1
 ! use analytical expression for specific yield
+                if (use_vg_retention) then
+                   s_y = vg_sy(zwt(c), watsat(c,j))
+                else
                 s_y = watsat(c,j) &
-                    * ( 1. -  (1.+1.e3*zwt(c)/sucsat(c,j))**(-1./bsw(c,j)))
+                     * ( 1. - (1.+1.e3*zwt(c)/sucsat(c,j))**(-1./bsw(c,j)))
+                end if
                 s_y=max(s_y,0.02_r8)
 
                 qcharge_layer=min(qcharge_tot,(s_y*(zwt(c) - zi(c,j-1))*1.e3))
@@ -1835,8 +1864,12 @@ contains
           else ! deepening water table (negative qcharge)
              do j = jwt(c)+1, nlevsoi
 ! use analytical expression for specific yield
+                if (use_vg_retention) then
+                   s_y = vg_sy(zwt(c), watsat(c,j))
+                else
                 s_y = watsat(c,j) &
-                     * ( 1. -  (1.+1.e3*zwt(c)/sucsat(c,j))**(-1./bsw(c,j)))
+                     * ( 1. - (1.+1.e3*zwt(c)/sucsat(c,j))**(-1./bsw(c,j)))
+                end if
                 s_y=max(s_y,0.02_r8)
                 qcharge_layer=max(qcharge_tot,-(s_y*(zi(c,j) - zwt(c))*1.e3))
                 qcharge_layer=min(qcharge_layer,0._r8)
@@ -1872,8 +1905,12 @@ contains
        c = filter_hydrologyc(fc)
 
 ! use analytical expression for aquifer specific yield
+       if (use_vg_retention) then
+          rous = vg_sy(zwt(c), watsat(c,nlevsoi))
+       else
        rous = watsat(c,nlevsoi) &
             * ( 1. - (1.+1.e3*zwt(c)/sucsat(c,nlevsoi))**(-1./bsw(c,nlevsoi)))
+       end if
        rous=max(rous,0.02_r8)
 
        qflx_rsub_sat(c) = 0._r8
@@ -1899,8 +1936,12 @@ contains
           if(qflx_lat_aqu_tot > 0.) then !rising water table
              do j = jwt(c)+1, 1,-1
 ! use analytical expression for specific yield
+                if (use_vg_retention) then
+                   s_y = vg_sy(zwt(c), watsat(c,j))
+                else
                 s_y = watsat(c,j) &
-                    * ( 1. -  (1.+1.e3*zwt(c)/sucsat(c,j))**(-1./bsw(c,j)))
+                     * ( 1. - (1.+1.e3*zwt(c)/sucsat(c,j))**(-1./bsw(c,j)))
+                end if
                 s_y=max(s_y,0.02_r8)
 
                 qflx_lat_aqu_layer(c,j)=min(qflx_lat_aqu_tot,(s_y*(zwt(c) - zi(c,j-1))*1.e3))
@@ -1933,8 +1974,12 @@ contains
              do j = jwt(c)+1, nlevsoi
             
 ! use analytical expression for specific yield
+                if (use_vg_retention) then
+                   s_y = vg_sy(zwt(c), watsat(c,j))
+                else
                 s_y = watsat(c,j) &
-                     * ( 1. -  (1.+1.e3*zwt(c)/sucsat(c,j))**(-1./bsw(c,j)))
+                     * ( 1. - (1.+1.e3*zwt(c)/sucsat(c,j))**(-1./bsw(c,j)))
+                end if
                 s_y=max(s_y,0.02_r8)
                 qflx_lat_aqu_layer(c,j)=max(qflx_lat_aqu_tot,-(s_y*(zi(c,j) - zwt(c))*1.e3))
                 qflx_lat_aqu_layer(c,j)=min(qflx_lat_aqu_layer(c,j),0._r8)
@@ -2191,8 +2236,12 @@ contains
 #endif
 
 ! use analytical expression for aquifer specific yield
+       if (use_vg_retention) then
+          rous = vg_sy(zwt(c), watsat(c,nlevsoi))
+       else
        rous = watsat(c,nlevsoi) &
             * ( 1. - (1.+1.e3*zwt(c)/sucsat(c,nlevsoi))**(-1./bsw(c,nlevsoi)))
+       end if
        rous=max(rous,0.02_r8)
 
 !--  water table is below the soil column  --------------------------------------
@@ -2229,8 +2278,12 @@ contains
 #else
              do j = jwt(c)+1, nlevsoi
 ! use analytical expression for specific yield
+                if (use_vg_retention) then
+                   s_y = vg_sy(zwt(c), watsat(c,j))
+                else
                 s_y = watsat(c,j) &
                      * ( 1. - (1.+1.e3*zwt(c)/sucsat(c,j))**(-1./bsw(c,j)))
+                end if
                 s_y=max(s_y,0.02_r8)
                 
                 rsub_top_layer=max(rsub_top_tot,-(s_y*(zi(c,j) - zwt(c))*1.e3))

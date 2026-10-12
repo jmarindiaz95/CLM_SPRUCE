@@ -124,6 +124,7 @@ subroutine microbech4 (lbg, ubg, lbc, ubc, lbp, ubp,num_soilc, filter_soilc, &
 	use shr_const_mod, only: SHR_CONST_TKFRZ, SHR_CONST_RGAS
 !
 ! !ARGUMENTS:
+	use clm_varctl, only : use_zwt_finundation
 implicit none
 	integer, intent(in) :: lbg, ubg           			! grid-index bounds
 !	integer, intent(in) :: lbl, ubl           			! landunit-level index bounds
@@ -766,7 +767,7 @@ implicit none
 	end do
 
 #if (defined HUM_HOL)
-	finundated(c) = 0.99
+	if (.not. use_zwt_finundation) finundated(c) = 0.99
 #endif
 
 !#ifdef MODELTEST
@@ -779,6 +780,7 @@ implicit none
 	else
 		micfinundated = finundated(c)
 	end if  
+	if (use_zwt_finundation) micfinundated = finundated(c)   ! Yuan et al. 2023: one scalar for the whole column
 !	      write(iulog,*) "microbial before: ",decomp_cpools_vr(c,j,i_dom), cdocs(c,j), decomp_npools_vr(c,j,i_dom), cdons(c,j)
 !      decomp_cpools_vr(c,j,i_dom) = max(0._r8, decomp_cpools_vr(c,j,i_dom))
       cdocs(c,j)				= decomp_cpools_vr(c,j,i_dom) 
@@ -2501,6 +2503,7 @@ end do
       micfinundated = 0.99
 #endif
       end if      
+      if (use_zwt_finundation) micfinundated = finundated(c)
 	cdocs(c,j) 				= cdocs_unsat(c,j) * (1.0 - micfinundated) + cdocs_sat(c,j) * micfinundated
 	caces(c,j) 				= caces_unsat(c,j) * (1.0 - micfinundated)  + caces_sat(c,j) * micfinundated
 	caces_prod(c,j) 		= caces_unsat_prod(c,j) * (1.0 - micfinundated)  + caces_sat_prod(c,j) * micfinundated
@@ -2803,6 +2806,7 @@ subroutine update_finundated(lbc,ubc,num_micbioc,filter_micbioc)
 	use clm_varcon, only : secspday, istwet, istsoil, istdlak, spval, istcrop
 !
 ! !ARGUMENTS:
+	use clm_varctl, only : use_zwt_finundation, finund_k, finund_min
 implicit none
 	integer, intent(in) :: lbc, ubc                		! column bounds
 	integer, intent(in) :: num_micbioc               		! number of soil columns in filter
@@ -2811,6 +2815,7 @@ implicit none
 ! !LOCAL VARIABLES:
 ! local pointers to implicit in scalars
 	real(r8), pointer :: finundated(:)     			! fractional inundated area in soil column
+	real(r8), pointer :: zwt_fin(:)     			! water table depth (m)
 	real(r8), pointer :: finundated_pre(:)     		! fractional inundated area in soil column in previous time step
 	
 	real(r8), pointer :: cdocs_unsat(:,:)                   	! column-level dissolved organic carbon in unsatured fraction
@@ -2849,6 +2854,7 @@ implicit none
 !-----------------------------------------------------------------------
 ! assign local pointers to derived type arrays
 	finundated        				=> cws%finundated
+	zwt_fin           				=> cws%zwt
 	finundated_pre        			=> cmic%fsat_pre
 
 	cdocs_unsat 				=> cmic%cdocs_unsat
@@ -2879,6 +2885,10 @@ implicit none
 
 	do fc = 1,num_micbioc
         c = filter_micbioc(fc)
+	if (use_zwt_finundation) then
+	   ! Yuan et al. 2023 (SI Eq. 2): water coverage scalar from water table depth (m), floor finund_min, cap 1
+	   finundated(c) = min(1._r8, exp(-finund_k * max(zwt_fin(c), 0._r8)) + finund_min)
+	end if
 	if(finundated_pre(c) > 1.0) then
 	finundated_pre(c) = finundated(c)
 	end if

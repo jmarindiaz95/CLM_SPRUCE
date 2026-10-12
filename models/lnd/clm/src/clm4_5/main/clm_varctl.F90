@@ -86,6 +86,20 @@ module clm_varctl
   real(r8), public :: add_temperature = 0               !Add temperature during experimental maipulation
   real(r8), public :: add_co2 = 0                       !Add co2 during experimental manipulation
 
+! Tropical peatland options (Yuan et al. 2023, Agric. For. Meteorol. 332:109364); defaults keep ELM-SPRUCE behaviour
+  logical,  public :: use_vg_retention = .false.   ! van Genuchten soil water retention (SI Eq. 1) instead of Clapp-Hornberger
+  real(r8), public :: vg_theta_res = 0.26_r8       ! residual water content (m3/m3)
+  real(r8), public :: vg_n = 1.4_r8                ! van Genuchten n (-)
+  real(r8), public :: vg_alpha = 0.01_r8           ! van Genuchten alpha (1/cm)
+  logical,  public :: use_zwt_finundation = .false. ! CH4 water coverage scalar f = exp(-k*zwt) + fmin, capped at 1 (SI Eq. 2)
+  real(r8), public :: finund_k = 219.4_r8          ! (1/m), zwt in m
+  real(r8), public :: finund_min = 0.45_r8         ! floor of the scalar
+  logical,  public :: use_seasonal_leafcn = .false. ! leaf C:N for photosynthesis LCN0*exp(-(M-M0)^2/(2a^2)) (SI Eq. 3)
+  real(r8), public :: leafcn_amp = 49.294_r8       ! LCN0
+  real(r8), public :: leafcn_m0 = 7.43_r8          ! M0 (month)
+  real(r8), public :: leafcn_width = 5.634_r8      ! a (months)
+  integer,  public :: gapmort_off_year = 1974      ! gap mortality set to 0 from this calendar year on (SPRUCE land-use history); large value disables
+
 ! Physics
 !
   integer,  public :: subgridflag = 1                   !use subgrid fluxes
