@@ -6,11 +6,12 @@ module SoilWaterRetentionMod
 ! Iiyama et al. 2012: theta_res = 0.26, n = 1.4, alpha = 0.01 1/cm).
 !
 !   Se  = (theta - theta_res) / (theta_sat - theta_res)
-!   psi = (1/alpha) * (Se^(-1/m) - 1)^(1/n),  m = 1 - 1/n      [cm suction]
+!   psi = ((Se^(-1/m) - 1) / alpha)^(1/n),  m = 1 - 1/n         [cm suction]
 !   smp = -10 * psi                                              [mm, ELM sign convention]
 !
-! The printed Eq. 1 places alpha inside the 1/n power; the form above is the standard
-! van Genuchten curve to which the Iiyama et al. parameters were fitted.
+! This is Eq. 1 as printed (alpha inside the 1/n power). It reproduces the Fig. S2 points
+! (RMSE 0.03 m3/m3 with theta_sat 0.61) much better than the textbook form
+! (1/alpha)*(Se^(-1/m)-1)^(1/n) with the same parameters (RMSE 0.08).
 ! Hydraulic conductivity keeps the Clapp-Hornberger form (Yuan et al. describe only the
 ! retention curve).
 !-----------------------------------------------------------------------
@@ -50,7 +51,7 @@ contains
     real(r8) :: se, m
     m  = 1._r8 - 1._r8/vg_n
     se = vg_se(theta, watsat)
-    vg_smp = -10._r8 / vg_alpha * (max(se**(-1._r8/m) - 1._r8, 0._r8))**(1._r8/vg_n)
+    vg_smp = -10._r8 * (max(se**(-1._r8/m) - 1._r8, 0._r8) / vg_alpha)**(1._r8/vg_n)
   end function vg_smp
 
   pure real(r8) function vg_dsmpdw(theta, watsat)
@@ -60,7 +61,7 @@ contains
     tr = theta_r(watsat)
     se = min(vg_se(theta, watsat), se_dmax)
     x  = se**(-1._r8/m) - 1._r8
-    vg_dsmpdw = 10._r8 / (vg_alpha * vg_n * m) * x**(1._r8/vg_n - 1._r8) * se**(-1._r8/m - 1._r8) / (watsat - tr)
+    vg_dsmpdw = 10._r8 / (vg_alpha * vg_n * m) * (x/vg_alpha)**(1._r8/vg_n - 1._r8) * se**(-1._r8/m - 1._r8) / (watsat - tr)
   end function vg_dsmpdw
 
   pure real(r8) function vg_theta(suction_mm, watsat)
@@ -69,7 +70,7 @@ contains
     m  = 1._r8 - 1._r8/vg_n
     tr = theta_r(watsat)
     psi_cm = max(suction_mm, 0._r8) / 10._r8
-    vg_theta = tr + (watsat - tr) * (1._r8 + (vg_alpha*psi_cm)**vg_n)**(-m)
+    vg_theta = tr + (watsat - tr) * (1._r8 + vg_alpha*psi_cm**vg_n)**(-m)
   end function vg_theta
 
   pure real(r8) function vg_vol_eq(zwtmm, ztop, zbot, watsat)

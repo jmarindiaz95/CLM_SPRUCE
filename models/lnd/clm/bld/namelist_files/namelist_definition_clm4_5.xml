@@ -77,6 +77,11 @@ van Genuchten n
 van Genuchten alpha (1/cm)
 </entry>
 
+<entry id="use_vg_specific_yield" type="logical" category = "clm_physics"
+        group="clm_inparm" >
+derive aquifer specific yield from the van Genuchten curve (default: Clapp-Hornberger)
+</entry>
+
 <entry id="use_zwt_finundation" type="logical" category = "clm_physics"
         group="clm_inparm" >
 CH4 water coverage scalar exp(-finund_k*zwt)+finund_min, capped at 1 (Yuan et al. 2023)

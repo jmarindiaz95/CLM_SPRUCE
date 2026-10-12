@@ -2894,7 +2894,7 @@ implicit none
 	end if
 !write(iulog,*) " c: ", c
 	l = clandunit(c)     
-	if (ltype(l) == istsoil .or. ltype(l) == istcrop) then 
+	if ((ltype(l) == istsoil .or. ltype(l) == istcrop) .and. abs(finundated(c) - finundated_pre(c)) > 1.e-12_r8) then   ! no change: nothing to move (also avoids 0/0 at f = 1)
 	do j = 1,nlevsoi
 !write(iulog,*)	"before cdocs_sat", cdocs_sat(c,j), "cdocs_unsat", cdocs_unsat(c,j), "finundate", finundated(c), "finundated_pre(c)", finundated_pre(c)
 	if(finundated(c) < finundated_pre(c)) then
@@ -2918,7 +2918,7 @@ implicit none
 	ccon_co2s_unsat(c,j) 	= ccon_co2s_unsat(c,j) + ccon_co2s_sat(c,j) * dlt
 	ccon_co2s_sat(c,j) 		= ccon_co2s_sat(c,j) - ccon_co2s_sat(c,j) * dlt
 	ccon_h2s_unsat(c,j) 		= ccon_h2s_unsat(c,j) + ccon_h2s_sat(c,j) * dlt
-	ccon_h2s_sat 			= ccon_h2s_sat - ccon_h2s_sat * dlt
+	ccon_h2s_sat(c,j) 		= ccon_h2s_sat(c,j) - ccon_h2s_sat(c,j) * dlt
 	else
 	dlt 					= (finundated(c) - finundated_pre(c)) / (1. - finundated_pre(c))
 	cdocs_sat(c,j) 			= cdocs_sat(c,j) + cdocs_unsat(c,j) * dlt

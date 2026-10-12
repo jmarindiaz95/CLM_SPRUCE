@@ -11,7 +11,7 @@ module CNEcosystemDynMod
 !
 ! !USES:
   use shr_kind_mod, only: r8 => shr_kind_r8
-  use clm_varctl  , only: fpftdyn, use_c13, use_c14
+  use clm_varctl  , only: fpftdyn, use_c13, use_c14, use_zwt_finundation
 !
 ! !PUBLIC TYPES:
   implicit none
@@ -287,6 +287,9 @@ contains
 #if(defined MICROBE)
 #ifndef HUM_HOL
      call update_finundated(lbc,ubc,num_soilc, filter_soilc)
+#else
+     ! hummock-hollow build keeps a fixed 0.99 unless the Yuan et al. (2023) water coverage scalar is on
+     if (use_zwt_finundation) call update_finundated(lbc,ubc,num_soilc, filter_soilc)
 #endif
      call microbech4 (lbg, ubg, lbc,ubc,lbp,ubp,num_soilc, filter_soilc, &
                num_soilp, filter_soilp,'bulk')

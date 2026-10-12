@@ -91,6 +91,7 @@ module clm_varctl
   real(r8), public :: vg_theta_res = 0.26_r8       ! residual water content (m3/m3)
   real(r8), public :: vg_n = 1.4_r8                ! van Genuchten n (-)
   real(r8), public :: vg_alpha = 0.01_r8           ! van Genuchten alpha (1/cm)
+  logical,  public :: use_vg_specific_yield = .false. ! also derive aquifer specific yield from the VG curve (not in Yuan et al.)
   logical,  public :: use_zwt_finundation = .false. ! CH4 water coverage scalar f = exp(-k*zwt) + fmin, capped at 1 (SI Eq. 2)
   real(r8), public :: finund_k = 219.4_r8          ! (1/m), zwt in m
   real(r8), public :: finund_min = 0.45_r8         ! floor of the scalar

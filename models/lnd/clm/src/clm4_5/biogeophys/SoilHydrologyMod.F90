@@ -8,7 +8,7 @@ module SoilHydrologyMod
 ! !DESCRIPTION:
 ! Calculate soil hydrology
 !
-  use clm_varctl    , only : iulog, use_vg_retention
+  use clm_varctl    , only : iulog, use_vg_retention, use_vg_specific_yield
   use SoilWaterRetentionMod, only : vg_smp, vg_dsmpdw, vg_theta, vg_vol_eq, vg_sy
   use shr_kind_mod  , only : r8 => shr_kind_r8
   use clm_varcon    , only : e_ice,denh2o, denice,rpi
@@ -1826,7 +1826,7 @@ contains
        c = filter_hydrologyc(fc)
 
 ! use analytical expression for aquifer specific yield
-       if (use_vg_retention) then
+       if (use_vg_retention .and. use_vg_specific_yield) then
           rous = vg_sy(zwt(c), watsat(c,nlevsoi))
        else
        rous = watsat(c,nlevsoi) &
@@ -1845,7 +1845,7 @@ contains
           if(qcharge_tot > 0.) then !rising water table
              do j = jwt(c)+1, 1,-1
 ! use analytical expression for specific yield
-                if (use_vg_retention) then
+                if (use_vg_retention .and. use_vg_specific_yield) then
                    s_y = vg_sy(zwt(c), watsat(c,j))
                 else
                 s_y = watsat(c,j) &
@@ -1864,7 +1864,7 @@ contains
           else ! deepening water table (negative qcharge)
              do j = jwt(c)+1, nlevsoi
 ! use analytical expression for specific yield
-                if (use_vg_retention) then
+                if (use_vg_retention .and. use_vg_specific_yield) then
                    s_y = vg_sy(zwt(c), watsat(c,j))
                 else
                 s_y = watsat(c,j) &
@@ -1905,7 +1905,7 @@ contains
        c = filter_hydrologyc(fc)
 
 ! use analytical expression for aquifer specific yield
-       if (use_vg_retention) then
+       if (use_vg_retention .and. use_vg_specific_yield) then
           rous = vg_sy(zwt(c), watsat(c,nlevsoi))
        else
        rous = watsat(c,nlevsoi) &
@@ -1936,7 +1936,7 @@ contains
           if(qflx_lat_aqu_tot > 0.) then !rising water table
              do j = jwt(c)+1, 1,-1
 ! use analytical expression for specific yield
-                if (use_vg_retention) then
+                if (use_vg_retention .and. use_vg_specific_yield) then
                    s_y = vg_sy(zwt(c), watsat(c,j))
                 else
                 s_y = watsat(c,j) &
@@ -1974,7 +1974,7 @@ contains
              do j = jwt(c)+1, nlevsoi
             
 ! use analytical expression for specific yield
-                if (use_vg_retention) then
+                if (use_vg_retention .and. use_vg_specific_yield) then
                    s_y = vg_sy(zwt(c), watsat(c,j))
                 else
                 s_y = watsat(c,j) &
@@ -2236,7 +2236,7 @@ contains
 #endif
 
 ! use analytical expression for aquifer specific yield
-       if (use_vg_retention) then
+       if (use_vg_retention .and. use_vg_specific_yield) then
           rous = vg_sy(zwt(c), watsat(c,nlevsoi))
        else
        rous = watsat(c,nlevsoi) &
@@ -2278,7 +2278,7 @@ contains
 #else
              do j = jwt(c)+1, nlevsoi
 ! use analytical expression for specific yield
-                if (use_vg_retention) then
+                if (use_vg_retention .and. use_vg_specific_yield) then
                    s_y = vg_sy(zwt(c), watsat(c,j))
                 else
                 s_y = watsat(c,j) &
