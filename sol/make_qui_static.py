@@ -75,7 +75,7 @@ for pat, kind in streams:
     d = clone(f'{IN}/' + pat.format(s=SITE_OLD), f'{IN}/' + pat.format(s=SITE))
     if kind == 'latlon2':
         d['lat'][:] = [LAT - 0.0005, LAT + 0.0005]
-        d['lon'][:] = LON
+        d['lon'][:] = LON - 0.105   # same offset as the US-SPR file; a source lon equal to the gridcell lon gives dx=dy=0 in shr_map_getWts
     else:
         for v in ['lat', 'LAT']:
             if v in d.variables: d[v][:] = LAT
