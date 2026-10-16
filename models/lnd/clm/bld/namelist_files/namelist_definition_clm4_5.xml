@@ -97,6 +97,11 @@ decay coefficient of the water coverage scalar (1/m)
 floor of the water coverage scalar
 </entry>
 
+<entry id="finund_wt_only" type="logical" category = "clm_physics"
+        group="clm_inparm" >
+apply the water coverage scalar only to layers above the water table
+</entry>
+
 <entry id="use_seasonal_leafcn" type="logical" category = "clm_physics"
         group="clm_inparm" >
 seasonal leaf C:N in photosynthesis (Yuan et al. 2023)

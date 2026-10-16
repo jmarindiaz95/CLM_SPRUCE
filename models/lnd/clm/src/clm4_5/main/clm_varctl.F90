@@ -95,6 +95,7 @@ module clm_varctl
   logical,  public :: use_zwt_finundation = .false. ! CH4 water coverage scalar f = exp(-k*zwt) + fmin, capped at 1 (SI Eq. 2)
   real(r8), public :: finund_k = 219.4_r8          ! (1/m), zwt in m
   real(r8), public :: finund_min = 0.45_r8         ! floor of the scalar
+  logical,  public :: finund_wt_only = .false.     ! apply the scalar only above the water table (below it: saturated, 0.99)
   logical,  public :: use_seasonal_leafcn = .false. ! leaf C:N for photosynthesis LCN0*exp(-(M-M0)^2/(2a^2)) (SI Eq. 3)
   real(r8), public :: leafcn_amp = 49.294_r8       ! LCN0
   real(r8), public :: leafcn_m0 = 7.43_r8          ! M0 (month)

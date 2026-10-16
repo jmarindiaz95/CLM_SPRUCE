@@ -124,7 +124,7 @@ subroutine microbech4 (lbg, ubg, lbc, ubc, lbp, ubp,num_soilc, filter_soilc, &
 	use shr_const_mod, only: SHR_CONST_TKFRZ, SHR_CONST_RGAS
 !
 ! !ARGUMENTS:
-	use clm_varctl, only : use_zwt_finundation
+	use clm_varctl, only : use_zwt_finundation, finund_wt_only
 implicit none
 	integer, intent(in) :: lbg, ubg           			! grid-index bounds
 !	integer, intent(in) :: lbl, ubl           			! landunit-level index bounds
@@ -780,7 +780,10 @@ implicit none
 	else
 		micfinundated = finundated(c)
 	end if  
-	if (use_zwt_finundation) micfinundated = finundated(c)   ! Yuan et al. 2023: one scalar for the whole column
+	if (use_zwt_finundation) then   ! Yuan et al. 2023 scalar; optionally only above the water table
+	   micfinundated = finundated(c)
+	   if (finund_wt_only .and. j > jwaterhead_unsat(c)) micfinundated = 0.99
+	end if
 !	      write(iulog,*) "microbial before: ",decomp_cpools_vr(c,j,i_dom), cdocs(c,j), decomp_npools_vr(c,j,i_dom), cdons(c,j)
 !      decomp_cpools_vr(c,j,i_dom) = max(0._r8, decomp_cpools_vr(c,j,i_dom))
       cdocs(c,j)				= decomp_cpools_vr(c,j,i_dom) 
@@ -2503,7 +2506,10 @@ end do
       micfinundated = 0.99
 #endif
       end if      
-      if (use_zwt_finundation) micfinundated = finundated(c)
+      if (use_zwt_finundation) then
+         micfinundated = finundated(c)
+         if (finund_wt_only .and. j > jwaterhead_unsat(c)) micfinundated = 0.99
+      end if
 	cdocs(c,j) 				= cdocs_unsat(c,j) * (1.0 - micfinundated) + cdocs_sat(c,j) * micfinundated
 	caces(c,j) 				= caces_unsat(c,j) * (1.0 - micfinundated)  + caces_sat(c,j) * micfinundated
 	caces_prod(c,j) 		= caces_unsat_prod(c,j) * (1.0 - micfinundated)  + caces_sat_prod(c,j) * micfinundated
