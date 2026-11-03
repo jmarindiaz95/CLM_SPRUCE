@@ -245,9 +245,10 @@ module microbevarcon
 	real(r8) :: pHopt = 7.
   
 	real(r8) :: dom_diffus = 10. / 3600. / 365.
-	! Bug-fix switches (optional trailing lines in microbepar_in: "fix_dom_n 1", "fix_co2_dt 1"; 0 = original code)
+	! Bug-fix switches (optional trailing lines in microbepar_in: "fix_dom_n 1", "fix_co2_dt 1", "fix_ch4_unsat 1"; 0 = original code)
 	logical :: fix_dom_n = .true.    ! conserve N when DON is reset to DOC/cn_dom
 	logical :: fix_co2_dt = .true.   ! respiration CO2 source to soil CO2 pool: per time step, accumulator reset
+	logical :: fix_ch4_unsat = .true. ! unsaturated fraction: ebullition as a rate (/dt) and plant+ebullition limited to CH4 above m_dCH4min
 	real(r8) :: m_Fick_ad = 0.75
 	  
 !
@@ -321,6 +322,7 @@ real(r8)::dummy(nummicrobepar)
           if (ierr /= 0) exit
           if (trim(adjustl(swname)) == 'fix_dom_n')  fix_dom_n  = (swval > 0.5_r8)
           if (trim(adjustl(swname)) == 'fix_co2_dt') fix_co2_dt = (swval > 0.5_r8)
+          if (trim(adjustl(swname)) == 'fix_ch4_unsat') fix_ch4_unsat = (swval > 0.5_r8)
        end do
        call relavu( unitn )
 
@@ -558,6 +560,7 @@ end if
     call mpi_bcast (dom_diffus, 1 , MPI_REAL8, 0, mpicom, ierr)
     call mpi_bcast (fix_dom_n, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (fix_co2_dt, 1 , MPI_LOGICAL, 0, mpicom, ierr)
+    call mpi_bcast (fix_ch4_unsat, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (m_Fick_ad, 1 , MPI_REAL8, 0, mpicom, ierr)
     call mpi_bcast (m_dPlantTrans, 1 , MPI_REAL8, 0, mpicom, ierr)
     
@@ -661,6 +664,7 @@ end if
 	write(iulog,*)'dom_diffus = ', dom_diffus
 	write(iulog,*)'fix_dom_n = ', fix_dom_n
 	write(iulog,*)'fix_co2_dt = ', fix_co2_dt
+	write(iulog,*)'fix_ch4_unsat = ', fix_ch4_unsat
 	
 	write(iulog,*)'m_dPlantTrans = ', m_dPlantTrans
 	

@@ -1174,12 +1174,16 @@ if(j >= jwaterhead_unsat(c)) then
 	CH4Ebull = max((ccon_ch4s_unsat(c,j) - m_dCH4min), 0._r8) * nppratio(c) * exp(-z(c,j)/0.35) !* (2.0 ** ((soiltemp(c,j) - 286.65) / 10.)) ! (exp(0.5 * (j - 0.5))-1) !* exp(-z(c,j)/1.25)   ! mmol/L     ! current these two equation have same threshold, will need to be corrected later
 	else
 	CH4PlantFlux = 0.0 * m_dPlantTrans *  rootfraction(c,j)*(ccon_ch4s_unsat(c,j) - m_dCH4min / 1.0) * nppratio(c)*exp(-z(c,j)/0.25)/z(c,j)
-	!CH4Ebull = 0._r8
+	if (fix_ch4_unsat) CH4Ebull = 0._r8   ! otherwise the value from the previous layer carries over
 	endif
 
 	CH4PlantFlux = max(CH4PlantFlux, 0._r8)
 	CH4Ebull = max(CH4Ebull, 0._r8)
+	if (fix_ch4_unsat) then
+	CH4Ebull = CH4Ebull / dt          ! mol m-3 -> mol m-3 s-1, as in the saturated fraction
+	else
 	CH4Ebull = min(CH4Ebull, ccon_ch4s_unsat(c,j) / 2.0)
+	end if
 			
 	!	// For O2 dyndamics
 	AerO2Cons = m_drAer * ACCO2Prod
@@ -1235,6 +1239,14 @@ if(j >= jwaterhead_unsat(c)) then
 	ccon_ch4s_unsat(c,j) = 0._r8
 	end if
 	
+	if (fix_ch4_unsat) then
+	! limit plant transport + ebullition to the CH4 above m_dCH4min (same as the saturated fraction)
+	if ((CH4PlantFlux + CH4Ebull) * dt > max(ccon_ch4s_unsat(c,j) - m_dCH4min, 0._r8)) then
+	tem4 = max(ccon_ch4s_unsat(c,j) - m_dCH4min, 0._r8) / ((CH4PlantFlux + CH4Ebull) * dt)
+	CH4PlantFlux = CH4PlantFlux * tem4
+	CH4Ebull = CH4Ebull * tem4
+	end if
+	end if
 	ccon_ch4s_unsat(c,j) = ccon_ch4s_unsat(c,j) - CH4PlantFlux * dt - CH4Ebull * dt
 	
 	ccon_o2s_unsat(c,j) = ccon_o2s_unsat(c,j) - (AerO2Cons + CH4O2Cons) * dt
