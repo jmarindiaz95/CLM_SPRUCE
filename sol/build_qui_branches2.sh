@@ -26,13 +26,15 @@ module load intel-oneapi-compilers-2022.1.0-gcc-11.2.0 intel-oneapi-mpi-2021.10.
 export LD_LIBRARY_PATH=$NCDF/lib:$LD_LIBRARY_PATH
 export I_MPI_CC=icc I_MPI_CXX=icpc I_MPI_FC=ifort I_MPI_F90=ifort I_MPI_F77=ifort
 cd $CASE
-T0=$(stat -c %Y $BLD/cesm.exe)
-if ./qui_microbe.build > build_out.txt 2>&1 && grep -q SUCCESSFULLY build_out.txt; then
-  [ $(stat -c %Y $BLD/cesm.exe) -gt $T0 ] || { echo "ERROR: cesm.exe not relinked"; exit 1; }
-  echo "== BUILD OK $(date)"
+# Force the land model to recompile from source and cesm.exe to relink (an incremental make skipped it on Nov 3)
+rm -f $BLD/lnd/obj/*.o $BLD/lnd/obj/*.mod $BLD/lib/liblnd.a $BLD/cesm.exe
+if ./qui_microbe.build > build_out.txt 2>&1 && grep -q SUCCESSFULLY build_out.txt && [ -x $BLD/cesm.exe ]; then
+  # the fix writes 'fix_ch4_unsat = ' to lnd.log, so that string must be inside the new executable
+  strings $BLD/cesm.exe | grep -q "fix_ch4_unsat" || { echo "ERROR: cesm.exe built but does not contain fix_ch4_unsat (case compiles another source?)"; grep -i -m3 biogeochem $CASE/Buildconf/clmconf/Filepath; exit 1; }
+  echo "== BUILD OK $(date), fix_ch4_unsat compiled in"
   bash $SRC/sol/run_qui_branches2.sh
 else
   echo "== BUILD FAILED"
-  grep -a -i -m5 -B1 -A4 error $(ls -t $BLD/*.bldlog.* | head -1) | cut -c1-300
+  zcat -f $(ls -t $BLD/*.bldlog.* | head -1) | grep -a -i -m5 -B1 -A4 error | cut -c1-300
   exit 1
 fi
