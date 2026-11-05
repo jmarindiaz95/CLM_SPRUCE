@@ -1710,6 +1710,42 @@ contains
     call hist_addfld1d (fname='CH4_SURF_NETFLUX_UNSAT', units='mol/m2/s',  &
          avgflag='A', long_name='net flux of surface CH4 flux for non-inundated area; (+ to atm)', &
          ptr_col=cmic%ch4_surf_netflux_unsat)
+    call hist_addfld1d (fname='CH4BUD_STOCK_SAT', units='mol/m2',  &
+         avgflag='A', long_name='column CH4 stock (sum over soil layers of concentration x dz) at the end of the step, saturated fraction', &
+         ptr_col=cmic%ch4bud_stock_sat)
+    call hist_addfld1d (fname='CH4BUD_STOCK_UNSAT', units='mol/m2',  &
+         avgflag='A', long_name='column CH4 stock (sum over soil layers of concentration x dz) at the end of the step, unsaturated fraction', &
+         ptr_col=cmic%ch4bud_stock_unsat)
+    call hist_addfld1d (fname='CH4BUD_SRC_SAT', units='mol/m2/s',  &
+         avgflag='A', long_name='production - AOM - aerobic oxidation - surface net flux reported for the step, saturated fraction', &
+         ptr_col=cmic%ch4bud_src_sat)
+    call hist_addfld1d (fname='CH4BUD_SRC_UNSAT', units='mol/m2/s',  &
+         avgflag='A', long_name='production - AOM - aerobic oxidation - surface net flux reported for the step, unsaturated fraction', &
+         ptr_col=cmic%ch4bud_src_unsat)
+    call hist_addfld1d (fname='CH4BUD_RES_SAT', units='mol/m2/s',  &
+         avgflag='A', long_name='CH4 budget residual inside the CH4 routine: stock change - reported sources/sinks (0 if conserved), saturated fraction', &
+         ptr_col=cmic%ch4bud_res_sat)
+    call hist_addfld1d (fname='CH4BUD_RES_UNSAT', units='mol/m2/s',  &
+         avgflag='A', long_name='CH4 budget residual inside the CH4 routine: stock change - reported sources/sinks (0 if conserved), unsaturated fraction', &
+         ptr_col=cmic%ch4bud_res_unsat)
+    call hist_addfld1d (fname='CH4BUD_RESX_SAT', units='mol/m2/s',  &
+         avgflag='A', long_name='CH4 stock change between the end of one CH4 routine call and the start of the next (0 if nothing else touches the pool), saturated fraction', &
+         ptr_col=cmic%ch4bud_resx_sat)
+    call hist_addfld1d (fname='CH4BUD_RESX_UNSAT', units='mol/m2/s',  &
+         avgflag='A', long_name='CH4 stock change between the end of one CH4 routine call and the start of the next (0 if nothing else touches the pool), unsaturated fraction', &
+         ptr_col=cmic%ch4bud_resx_unsat)
+    call hist_addfld1d (fname='CH4BUD_DDIF_SAT', units='mol/m2/s',  &
+         avgflag='A', long_name='CH4 stock change during gas_diffusion, saturated fraction', &
+         ptr_col=cmic%ch4bud_ddif_sat)
+    call hist_addfld1d (fname='CH4BUD_DDIF_UNSAT', units='mol/m2/s',  &
+         avgflag='A', long_name='CH4 stock change during gas_diffusion, unsaturated fraction', &
+         ptr_col=cmic%ch4bud_ddif_unsat)
+    call hist_addfld1d (fname='CH4BUD_DLAT_SAT', units='mol/m2/s',  &
+         avgflag='A', long_name='CH4 stock change during lateral_bgc (hummock-hollow exchange), saturated fraction', &
+         ptr_col=cmic%ch4bud_dlat_sat)
+    call hist_addfld1d (fname='CH4BUD_DLAT_UNSAT', units='mol/m2/s',  &
+         avgflag='A', long_name='CH4 stock change during lateral_bgc (hummock-hollow exchange), unsaturated fraction', &
+         ptr_col=cmic%ch4bud_dlat_unsat)
 	 
     call hist_addfld1d (fname='CO2_SURF_AERE', units='mol/m2/s',  &
          avgflag='A', long_name='plant-mediated transport of CO2 flux for inundated area; (+ to atm)', &

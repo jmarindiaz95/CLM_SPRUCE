@@ -1820,6 +1820,18 @@ type, public :: column_microbe_type
 	real(r8), pointer :: ch4_surf_ebul_unsat(:)		! CH4 ebulition transport at surface in the unsaturated zone (1 = sat)
 	real(r8), pointer :: ch4_surf_dif_unsat(:)		! CH4 diffusion transport at surface in the unsaturated zone (1 = sat)
 	real(r8), pointer :: ch4_surf_netflux_unsat(:)		! net CH4 flux at surface in the unsaturated zone (1 = sat)
+	real(r8), pointer :: ch4bud_stock_sat(:)		! CH4 budget diagnostic, stock sat
+	real(r8), pointer :: ch4bud_stock_unsat(:)		! CH4 budget diagnostic, stock unsat
+	real(r8), pointer :: ch4bud_src_sat(:)		! CH4 budget diagnostic, src sat
+	real(r8), pointer :: ch4bud_src_unsat(:)		! CH4 budget diagnostic, src unsat
+	real(r8), pointer :: ch4bud_res_sat(:)		! CH4 budget diagnostic, res sat
+	real(r8), pointer :: ch4bud_res_unsat(:)		! CH4 budget diagnostic, res unsat
+	real(r8), pointer :: ch4bud_resx_sat(:)		! CH4 budget diagnostic, resx sat
+	real(r8), pointer :: ch4bud_resx_unsat(:)		! CH4 budget diagnostic, resx unsat
+	real(r8), pointer :: ch4bud_ddif_sat(:)		! CH4 budget diagnostic, ddif sat
+	real(r8), pointer :: ch4bud_ddif_unsat(:)		! CH4 budget diagnostic, ddif unsat
+	real(r8), pointer :: ch4bud_dlat_sat(:)		! CH4 budget diagnostic, dlat sat
+	real(r8), pointer :: ch4bud_dlat_unsat(:)		! CH4 budget diagnostic, dlat unsat
 	real(r8), pointer :: co2_surf_aere_unsat(:)		! CO2 plant-mediated transport at surface in the unsaturated zone (1 = sat)
 	real(r8), pointer :: co2_surf_ebul_unsat(:)		! CO2 ebulition transport at surface in the unsaturated zone (1 = sat)
 	real(r8), pointer :: co2_surf_dif_unsat(:)		! CO2 diffusion transport at surface in the unsaturated zone (1 = sat)

@@ -4593,6 +4593,18 @@ contains
 	allocate(cmic%ch4_surf_ebul_unsat(beg:end))
 	allocate(cmic%ch4_surf_dif_unsat(beg:end))
 	allocate(cmic%ch4_surf_netflux_unsat(beg:end))
+	allocate(cmic%ch4bud_stock_sat(beg:end))
+	allocate(cmic%ch4bud_stock_unsat(beg:end))
+	allocate(cmic%ch4bud_src_sat(beg:end))
+	allocate(cmic%ch4bud_src_unsat(beg:end))
+	allocate(cmic%ch4bud_res_sat(beg:end))
+	allocate(cmic%ch4bud_res_unsat(beg:end))
+	allocate(cmic%ch4bud_resx_sat(beg:end))
+	allocate(cmic%ch4bud_resx_unsat(beg:end))
+	allocate(cmic%ch4bud_ddif_sat(beg:end))
+	allocate(cmic%ch4bud_ddif_unsat(beg:end))
+	allocate(cmic%ch4bud_dlat_sat(beg:end))
+	allocate(cmic%ch4bud_dlat_unsat(beg:end))
 	allocate(cmic%co2_surf_aere_unsat(beg:end))
 	allocate(cmic%co2_surf_ebul_unsat(beg:end))
 	allocate(cmic%co2_surf_dif_unsat(beg:end))
@@ -4791,6 +4803,18 @@ contains
 	cmic%ch4_surf_ebul_unsat(beg:end) = spval
 	cmic%ch4_surf_dif_unsat(beg:end) = spval
 	cmic%ch4_surf_netflux_unsat(beg:end) = spval
+	cmic%ch4bud_stock_sat(beg:end) = spval
+	cmic%ch4bud_stock_unsat(beg:end) = spval
+	cmic%ch4bud_src_sat(beg:end) = spval
+	cmic%ch4bud_src_unsat(beg:end) = spval
+	cmic%ch4bud_res_sat(beg:end) = spval
+	cmic%ch4bud_res_unsat(beg:end) = spval
+	cmic%ch4bud_resx_sat(beg:end) = spval
+	cmic%ch4bud_resx_unsat(beg:end) = spval
+	cmic%ch4bud_ddif_sat(beg:end) = spval
+	cmic%ch4bud_ddif_unsat(beg:end) = spval
+	cmic%ch4bud_dlat_sat(beg:end) = spval
+	cmic%ch4bud_dlat_unsat(beg:end) = spval
 	cmic%co2_surf_aere_unsat(beg:end) = spval
 	cmic%co2_surf_ebul_unsat(beg:end) = spval
 	cmic%co2_surf_dif_unsat(beg:end) = spval

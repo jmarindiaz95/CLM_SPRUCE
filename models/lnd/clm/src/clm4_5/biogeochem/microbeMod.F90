@@ -37,6 +37,7 @@ implicit none
 	public :: update_finundated
 !	public :: seasonality
 	private :: get_waterhead
+	private :: ch4bud_stock
 #if (defined HUM_HOL)
 	private :: lateral_bgc
 #endif
@@ -135,6 +136,8 @@ implicit none
 	integer, intent(in) :: num_soilp          			! number of soil points in pft filter
 	integer, intent(in) :: filter_soilp(ubp-lbp+1) 		! pft filter for soil points
 	character(len=*), intent(in) :: isotope  ! 'bulk', 'c13' or 'c14'
+	real(r8) :: bs0(lbc:ubc), bu0(lbc:ubc), bs1(lbc:ubc), bu1(lbc:ubc), bs2(lbc:ubc), bu2(lbc:ubc), bs3(lbc:ubc), bu3(lbc:ubc) ! CH4 budget stocks
+	integer  :: fcb, cb, jb   ! CH4 budget loop indices
 ! !CALLED FROM:
 ! driver.F90
 !
@@ -744,6 +747,20 @@ implicit none
 	cdocs_unsat_temp 			= 0._r8
 	cdocs_sat_temp 			= 0._r8
 	dt = real( get_step_size(), r8 )
+
+	! CH4 budget diagnostic (bulk only): stock at the start of the step and change since the end of the previous call
+	if (isotope == 'bulk') then
+	   call ch4bud_stock(lbc, ubc, num_soilc, filter_soilc, bs0, bu0)
+	   do fcb = 1, num_soilc
+	      cb = filter_soilc(fcb)
+	      if (cmic%ch4bud_stock_sat(cb) /= spval) then
+	         cmic%ch4bud_resx_sat(cb)   = (bs0(cb) - cmic%ch4bud_stock_sat(cb)) / dt
+	         cmic%ch4bud_resx_unsat(cb) = (bu0(cb) - cmic%ch4bud_stock_unsat(cb)) / dt
+	      else
+	         cmic%ch4bud_resx_sat(cb) = 0._r8; cmic%ch4bud_resx_unsat(cb) = 0._r8
+	      end if
+	   end do
+	end if
 	
 	rgasm					= rgas / 1000.
 	do g =lbg, ubg
@@ -890,10 +907,20 @@ implicit none
 
 !	call seasonality(lbc, ubc, lbp, ubp, num_soilc, filter_soilc, num_soilp, filter_soilp)
 	call get_waterhead(lbc, ubc, num_soilc, filter_soilc,jwaterhead_unsat)
+	if (isotope == 'bulk') call ch4bud_stock(lbc, ubc, num_soilc, filter_soilc, bs1, bu1)
 	call gas_diffusion(lbc, ubc, num_soilc, filter_soilc,isotope)
+	if (isotope == 'bulk') call ch4bud_stock(lbc, ubc, num_soilc, filter_soilc, bs2, bu2)
 #if (defined HUM_HOL)
 	call lateral_bgc(lbc, ubc, num_soilc, filter_soilc,isotope)
 #endif
+	if (isotope == 'bulk') call ch4bud_stock(lbc, ubc, num_soilc, filter_soilc, bs3, bu3)
+	if (isotope == 'bulk') then
+	   do fcb = 1, num_soilc
+	      cb = filter_soilc(fcb)
+	      cmic%ch4bud_ddif_sat(cb) = (bs2(cb) - bs1(cb)) / dt; cmic%ch4bud_ddif_unsat(cb) = (bu2(cb) - bu1(cb)) / dt
+	      cmic%ch4bud_dlat_sat(cb) = (bs3(cb) - bs2(cb)) / dt; cmic%ch4bud_dlat_unsat(cb) = (bu3(cb) - bu2(cb)) / dt
+	   end do
+	end if
 
 !~ do fc = 1,num_soilc
 !~ c = filter_soilc(fc)
@@ -2610,9 +2637,47 @@ end do
       end if
            end do
       end do
-      
+
+	! CH4 budget diagnostic (bulk only): end-of-step stock, reported net source, residuals
+	if (isotope == 'bulk') then
+	   call ch4bud_stock(lbc, ubc, num_soilc, filter_soilc, bs1, bu1)   ! bs1/bu1 reused: end-of-step stock
+	   do fcb = 1, num_soilc
+	      cb = filter_soilc(fcb)
+	      cmic%ch4bud_src_sat(cb) = - cmic%ch4_surf_netflux_sat(cb)
+	      cmic%ch4bud_src_unsat(cb) = - cmic%ch4_surf_netflux_unsat(cb)
+	      do jb = 1, nlevsoi
+	         cmic%ch4bud_src_sat(cb) = cmic%ch4bud_src_sat(cb) + (cmic%ch4_prod_ace_depth_sat(cb,jb) + cmic%ch4_prod_co2_depth_sat(cb,jb) &
+	              - cmic%ch4_oxid_aom_depth_sat(cb,jb) - cmic%ch4_oxid_o2_depth_sat(cb,jb)) * cps%dz(cb,jb)
+	         cmic%ch4bud_src_unsat(cb) = cmic%ch4bud_src_unsat(cb) + (cmic%ch4_prod_ace_depth_unsat(cb,jb) + cmic%ch4_prod_co2_depth_unsat(cb,jb) &
+	              - cmic%ch4_oxid_aom_depth_unsat(cb,jb) - cmic%ch4_oxid_o2_depth_unsat(cb,jb)) * cps%dz(cb,jb)
+	      end do
+	      cmic%ch4bud_res_sat(cb)   = (bs1(cb) - bs0(cb)) / dt - cmic%ch4bud_src_sat(cb)
+	      cmic%ch4bud_res_unsat(cb) = (bu1(cb) - bu0(cb)) / dt - cmic%ch4bud_src_unsat(cb)
+	      cmic%ch4bud_stock_sat(cb) = bs1(cb); cmic%ch4bud_stock_unsat(cb) = bu1(cb)
+	   end do
+	end if
+
 end subroutine microbech4
 
+
+!-----------------------------------------------------------------------
+subroutine ch4bud_stock(lbc, ubc, num_c, filter_c, s_sat, s_unsat)
+! CH4 budget diagnostic: column CH4 stock (mol/m2) of each fraction, sum over soil layers of concentration x dz.
+	use clmtype
+	implicit none
+	integer, intent(in) :: lbc, ubc, num_c
+	integer, intent(in) :: filter_c(:)
+	real(r8), intent(out) :: s_sat(lbc:ubc), s_unsat(lbc:ubc)
+	integer :: fc, c, j
+	s_sat(:) = 0._r8; s_unsat(:) = 0._r8
+	do fc = 1, num_c
+	   c = filter_c(fc)
+	   do j = 1, nlevsoi
+	      s_sat(c)   = s_sat(c)   + cmic%ccon_ch4s_sat(c,j)   * cps%dz(c,j)
+	      s_unsat(c) = s_unsat(c) + cmic%ccon_ch4s_unsat(c,j) * cps%dz(c,j)
+	   end do
+	end do
+end subroutine ch4bud_stock
 
 subroutine get_waterhead(lbc, ubc, num_c, filter_c, waterhead)
 
