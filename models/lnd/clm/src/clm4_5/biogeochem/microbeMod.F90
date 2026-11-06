@@ -1812,10 +1812,7 @@ end if  ! end if of the frozen mechanism in trapping gases in soil
 	caerch4bios_unsat(c,j) 			= caerch4bios_unsat(c,j) * 12.		! convert from mmol/m3 to gC/m3
 	canaerch4bios_unsat(c,j) 			= canaerch4bios_unsat(c,j) * 12.	! convert from mmol/m3 to gC/m3
 	ccon_o2s_unsat(c,j) 				= ccon_o2s_unsat(c,j) * 32.		! convert from mmol/m3 to gC/m3
-	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) 			= ccon_ch4s_unsat(c,j) * 12.		! convert from mmol/m3 to gC/m3
-	if (isotope == 'bulk') cmic%ch4bud_res_other_unsat(c) = cmic%ch4bud_res_other_unsat(c) &
-	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
 	ccon_h2s_unsat(c,j) 				= ccon_h2s_unsat(c,j) * 2.		! convert from mmol/m3 to gC/m3
 	ccon_co2s_unsat(c,j) 			= ccon_co2s_unsat(c,j) * 12.		! convert from mmol/m3 to gC/m3
 	end do
@@ -2432,10 +2429,7 @@ end do
 	caerch4bios_sat(c,j) 		= caerch4bios_sat(c,j) * 12. 	!/ dz(c,j)
 	canaerch4bios_sat(c,j) 	= canaerch4bios_sat(c,j) * 12. 	!/ dz(c,j)
 	ccon_o2s_sat(c,j) 		= ccon_o2s_sat(c,j) * 32. 		!/ dz(c,j)
-	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,j)
 	ccon_ch4s_sat(c,j) 		= ccon_ch4s_sat(c,j) * 12. 		!/ dz(c,j)
-	if (isotope == 'bulk') cmic%ch4bud_res_other_sat(c) = cmic%ch4bud_res_other_sat(c) &
-	     + (ccon_ch4s_sat(c,j) - ch4bud_before) * dz(c,j) / dt
 	ccon_h2s_sat(c,j) 		= ccon_h2s_sat(c,j) * 2. 		!/ dz(c,j)
 	ccon_co2s_sat(c,j) 		= ccon_co2s_sat(c,j) * 12. 		!/ dz(c,j)
 	end do
@@ -2763,7 +2757,10 @@ end do
 	      end do
 	      cmic%ch4bud_res_sat(cb)   = (bs1(cb) - bs0(cb)) / dt - cmic%ch4bud_src_sat(cb)
 	      cmic%ch4bud_res_unsat(cb) = (bu1(cb) - bu0(cb)) / dt - cmic%ch4bud_src_unsat(cb)
-	      ! Raw assignment deltas telescope from the post-lateral snapshot.
+	      ! Stored CH4 is g C/m3; only the process loop uses mol/m3. Divide
+	      ! endpoint stocks by 12, exactly matching the model's existing conversion.
+	      ! Preserve the legacy mixed-unit total, but expose its unit mismatch.
+	      ! Raw molar assignment deltas telescope from the post-lateral snapshot.
 	      ch4bud_raw = cmic%ch4bud_res_react_sat(cb) &
 	           + cmic%ch4bud_res_remove_sat(cb) &
 	           + cmic%ch4bud_res_clip_sat(cb) &
@@ -2771,8 +2768,10 @@ end do
 	           + cmic%ch4bud_res_surf_sat(cb) &
 	           + cmic%ch4bud_res_other_sat(cb)
 	      cmic%ch4bud_res_other_sat(cb) = cmic%ch4bud_res_other_sat(cb) &
-	           + (bs1(cb)-bs3(cb))/dt - ch4bud_raw
-	      cmic%ch4bud_res_pre_sat(cb) = (bs3(cb)-bs0(cb))/dt
+	           + (bs1(cb)/12._r8-bs3(cb))/dt - ch4bud_raw
+	      cmic%ch4bud_res_pre_sat(cb) = (bs3(cb)-bs0(cb)/12._r8)/dt
+	      cmic%ch4bud_norm_res_sat(cb) = (bs1(cb)-bs0(cb))/(12._r8*dt) - cmic%ch4bud_src_sat(cb)
+	      cmic%ch4bud_res_units_sat(cb) = cmic%ch4bud_res_sat(cb) - cmic%ch4bud_norm_res_sat(cb)
 	      ch4bud_transport = 0._r8; ch4bud_reaction = 0._r8
 	      do jb = 1,nlevsoi
 	         ch4bud_transport = ch4bud_transport + (cmic%ch4_aere_depth_sat(cb,jb) &
@@ -2793,8 +2792,10 @@ end do
 	           + cmic%ch4bud_res_surf_unsat(cb) &
 	           + cmic%ch4bud_res_other_unsat(cb)
 	      cmic%ch4bud_res_other_unsat(cb) = cmic%ch4bud_res_other_unsat(cb) &
-	           + (bu1(cb)-bu3(cb))/dt - ch4bud_raw
-	      cmic%ch4bud_res_pre_unsat(cb) = (bu3(cb)-bu0(cb))/dt
+	           + (bu1(cb)/12._r8-bu3(cb))/dt - ch4bud_raw
+	      cmic%ch4bud_res_pre_unsat(cb) = (bu3(cb)-bu0(cb)/12._r8)/dt
+	      cmic%ch4bud_norm_res_unsat(cb) = (bu1(cb)-bu0(cb))/(12._r8*dt) - cmic%ch4bud_src_unsat(cb)
+	      cmic%ch4bud_res_units_unsat(cb) = cmic%ch4bud_res_unsat(cb) - cmic%ch4bud_norm_res_unsat(cb)
 	      ch4bud_transport = 0._r8; ch4bud_reaction = 0._r8
 	      do jb = 1,nlevsoi
 	         ch4bud_transport = ch4bud_transport + (cmic%ch4_aere_depth_unsat(cb,jb) &
@@ -2817,7 +2818,8 @@ end subroutine microbech4
 
 !-----------------------------------------------------------------------
 subroutine ch4bud_stock(lbc, ubc, num_c, filter_c, s_sat, s_unsat)
-! CH4 budget diagnostic: column CH4 stock (mol/m2) of each fraction, sum over soil layers of concentration x dz.
+! Sum concentration x dz for each fraction. Units follow the calling stage:
+! stored endpoints are g C/m2; snapshots inside the process loop are mol/m2.
 	use clmtype
 	implicit none
 	integer, intent(in) :: lbc, ubc, num_c

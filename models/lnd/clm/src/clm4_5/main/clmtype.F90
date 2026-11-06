@@ -1820,6 +1820,10 @@ type, public :: column_microbe_type
 	real(r8), pointer :: ch4_surf_ebul_unsat(:)		! CH4 ebulition transport at surface in the unsaturated zone (1 = sat)
 	real(r8), pointer :: ch4_surf_dif_unsat(:)		! CH4 diffusion transport at surface in the unsaturated zone (1 = sat)
 	real(r8), pointer :: ch4_surf_netflux_unsat(:)		! net CH4 flux at surface in the unsaturated zone (1 = sat)
+	real(r8), pointer :: ch4bud_norm_res_sat(:) ! unit-consistent total or legacy unit mismatch
+	real(r8), pointer :: ch4bud_norm_res_unsat(:) ! unit-consistent total or legacy unit mismatch
+	real(r8), pointer :: ch4bud_res_units_sat(:) ! unit-consistent total or legacy unit mismatch
+	real(r8), pointer :: ch4bud_res_units_unsat(:) ! unit-consistent total or legacy unit mismatch
 	real(r8), pointer :: ch4bud_stock_sat(:)		! CH4 budget diagnostic, stock sat
 	real(r8), pointer :: ch4bud_stock_unsat(:)		! CH4 budget diagnostic, stock unsat
 	real(r8), pointer :: ch4bud_src_sat(:)		! CH4 budget diagnostic, src sat
