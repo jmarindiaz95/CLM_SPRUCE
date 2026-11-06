@@ -96,6 +96,10 @@ for lab, v in data.items():
                 hummock_only=I(x[:, 0]), hollow_only=I(x[:, 1]),
                 budget_weighted=I((x * fx) @ w))
     b['lateral_test'] = lat
+    f12 = v['FINUNDATED'][1:]
+    b['guard_steps'] = dict(sat=int(np.sum(np.minimum(.64*f12[:, 0], .36*f12[:, 1]) < 1e-6)),
+                            unsat=int(np.sum(np.minimum(.64*(1-f12[:, 0]), .36*(1-f12[:, 1])) < 1e-6)),
+                            total=int(len(f12)))
     rep['branches'][lab] = b
 
 # prognostic effects (monthly means, column-weighted)
@@ -106,11 +110,19 @@ for lab in ['off', 'on']:
     with nc.Dataset(next((root/lab).glob('*.h0.*.nc'))) as d:
         avail = [k for k in keys if k in d.variables]
     mo[lab] = monthly(root/lab, avail)
+with nc.Dataset(sorted((root/'off').glob('*.h0.*.nc'))[0]) as d:
+    pft_idx = np.flatnonzero(np.ma.filled(d['pfts1d_wtgcell'][:], 0) > 0)   # the active pft of each column
+    pft_dim = {k: d[k].dimensions[-1] for k in keys if k in d.variables}
+assert len(pft_idx) == 2
+def colw(x, k):
+    if x.ndim == 1:
+        return x
+    x = x.reshape(x.shape[0], -1)
+    return (x[:, pft_idx] if pft_dim[k] == 'pft' else x[:, :2]) @ w
 pe = {}
 for k in mo['off']:
     a, c = mo['off'][k], mo['on'][k]
-    a2 = a.reshape(a.shape[0], -1)[:, :2] @ w if a.ndim > 1 else a
-    c2 = c.reshape(c.shape[0], -1)[:, :2] @ w if c.ndim > 1 else c
+    a2, c2 = colw(a, k), colw(c, k)
     pe[k] = dict(off_last12_mean=float(np.mean(a2[-12:])), on_last12_mean=float(np.mean(c2[-12:])),
                  max_abs_monthly_diff=float(np.max(np.abs(c2 - a2))))
 rep['monthly_column_weighted'] = pe
@@ -120,7 +132,7 @@ prof = ['CDOCS', 'CDONS', 'CACES', 'CCON_O2S', 'CCON_CH4S', 'CCON_CO2S',
         'CDOCS_SAT', 'CDOCS_UNSAT', 'CCON_O2S_SAT', 'CCON_O2S_UNSAT', 'CCON_CH4S_SAT', 'CCON_CH4S_UNSAT']
 pr = {}
 for lab in ['off', 'on']:
-    with nc.Dataset(next((root/lab).glob('*.h0.*.nc'))) as d:
+    with nc.Dataset(sorted((root/lab).glob('*.h0.*.nc'))[0]) as d:   # time-constant fields: first file
         dz = np.ma.filled(d['DZSOI'][:], np.nan).astype(float)       # (levgrnd, column)
     m = monthly(root/lab, prof)
     for k, x in m.items():                                          # (month, lev, column)
