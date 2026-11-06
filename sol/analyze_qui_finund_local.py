@@ -32,7 +32,7 @@ for branch in ['off', 'on']:
     files = sorted(folder.glob('*.h1.*.nc'))
     names = ['time', 'FINUNDATED'] + [f'CH4BUD_{k}_{part}' for k in ['STOCK', 'RESX', 'RES', 'SRC'] for part in ['SAT', 'UNSAT']]
     v = read(files, names)
-    assert len(v['time']) == 5*365*48, len(v['time'])
+    assert len(v['time']) == 5*365*48+1, len(v['time'])  # initial snapshot plus 87,600 steps
     assert np.allclose(np.diff(v['time'])*86400, dt, rtol=0, atol=0.02)
     f = v['FINUNDATED'][1:]
     fp = v['FINUNDATED'][:-1]
