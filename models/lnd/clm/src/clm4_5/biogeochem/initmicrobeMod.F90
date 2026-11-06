@@ -649,6 +649,7 @@ end subroutine initmicrobe
 	if(ccon_o2s_sat(c,j) == spval .or. arbinit) 				ccon_o2s_sat(c,j) = 0._r8
 	     
 	if(ch4_prod_ace_depth_unsat(c,j) == spval .or. arbinit)		ch4_prod_ace_depth_unsat(c,j) = 0._r8
+	if(cmic%ch4_prod_aceto_depth_unsat(c,j) == spval .or. arbinit)		cmic%ch4_prod_aceto_depth_unsat(c,j) = 0._r8
 	if(ch4_prod_co2_depth_unsat(c,j) == spval .or. arbinit)		ch4_prod_co2_depth_unsat(c,j) = 0._r8
 	if(ch4_oxid_o2_depth_unsat(c,j) == spval .or. arbinit)		ch4_oxid_o2_depth_unsat(c,j) = 0._r8
 	if(ch4_oxid_aom_depth_unsat(c,j) == spval .or. arbinit)		ch4_oxid_aom_depth_unsat(c,j) = 0._r8
@@ -676,6 +677,7 @@ end subroutine initmicrobe
 	if(h2_ebul_depth_unsat(c,j) == spval .or. arbinit)			h2_ebul_depth_unsat(c,j) = 0._r8
 
 	if(ch4_prod_ace_depth_sat(c,j) == spval .or. arbinit)		ch4_prod_ace_depth_sat(c,j) = 0._r8
+	if(cmic%ch4_prod_aceto_depth_sat(c,j) == spval .or. arbinit)		cmic%ch4_prod_aceto_depth_sat(c,j) = 0._r8
 	if(ch4_prod_co2_depth_sat(c,j) == spval .or. arbinit)		ch4_prod_co2_depth_sat(c,j) = 0._r8
 	if(ch4_oxid_o2_depth_sat(c,j) == spval .or. arbinit)			ch4_oxid_o2_depth_sat(c,j) = 0._r8
 	if(ch4_oxid_aom_depth_sat(c,j) == spval .or. arbinit)		ch4_oxid_aom_depth_sat(c,j) = 0._r8
@@ -703,6 +705,7 @@ end subroutine initmicrobe
 	if(h2_ebul_depth_sat(c,j) == spval .or. arbinit)			h2_ebul_depth_sat(c,j) = 0._r8
 
 	if(ch4_prod_ace_depth(c,j) == spval .or. arbinit)			ch4_prod_ace_depth(c,j) = 0._r8
+	if(cmic%ch4_prod_aceto_depth(c,j) == spval .or. arbinit)			cmic%ch4_prod_aceto_depth(c,j) = 0._r8
 	if(ch4_prod_co2_depth(c,j) == spval .or. arbinit)			ch4_prod_co2_depth(c,j) = 0._r8
 	if(ch4_oxid_o2_depth(c,j) == spval .or. arbinit)			ch4_oxid_o2_depth(c,j) = 0._r8
 	if(ch4_oxid_aom_depth(c,j) == spval .or. arbinit)			ch4_oxid_aom_depth(c,j) = 0._r8
@@ -807,6 +810,7 @@ end subroutine initmicrobe
 	ccon_h2s_sat(c,j) = 0._r8
 	  
 	ch4_prod_ace_depth_unsat(c,j) = 0._r8
+	cmic%ch4_prod_aceto_depth_unsat(c,j) = 0._r8
 	ch4_prod_co2_depth_unsat(c,j) = 0._r8
 	ch4_oxid_o2_depth_unsat(c,j) = 0._r8
 	ch4_oxid_aom_depth_unsat(c,j) = 0._r8
@@ -834,6 +838,7 @@ end subroutine initmicrobe
 	h2_ebul_depth_unsat(c,j) = 0._r8
 
 	ch4_prod_ace_depth_sat(c,j) = 0._r8
+	cmic%ch4_prod_aceto_depth_sat(c,j) = 0._r8
 	ch4_prod_co2_depth_sat(c,j) = 0._r8
 	ch4_oxid_o2_depth_sat(c,j) = 0._r8
 	ch4_oxid_aom_depth_sat(c,j) = 0._r8
@@ -861,6 +866,7 @@ end subroutine initmicrobe
 	h2_ebul_depth_sat(c,j) = 0._r8
 	  
 	ch4_prod_ace_depth(c,j) = 0._r8
+	cmic%ch4_prod_aceto_depth(c,j) = 0._r8
 	ch4_prod_co2_depth(c,j) = 0._r8
 	ch4_oxid_o2_depth(c,j) = 0._r8
 	ch4_oxid_aom_depth(c,j) = 0._r8

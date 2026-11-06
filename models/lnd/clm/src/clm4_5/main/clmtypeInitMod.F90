@@ -4566,6 +4566,7 @@ contains
 !    allocate(cmic%layer_sat_lag(beg:end,1:nlevgrnd))
 
 	allocate(cmic%ch4_prod_ace_depth_unsat(beg:end,1:nlevgrnd))
+	allocate(cmic%ch4_prod_aceto_depth_unsat(beg:end,1:nlevgrnd))
 	allocate(cmic%ch4_prod_co2_depth_unsat(beg:end,1:nlevgrnd))
 	allocate(cmic%ch4_oxid_o2_depth_unsat(beg:end,1:nlevgrnd))
 	allocate(cmic%ch4_oxid_aom_depth_unsat(beg:end,1:nlevgrnd))
@@ -4640,6 +4641,7 @@ contains
 	allocate(cmic%h2_surf_netflux_unsat(beg:end))
 
 	allocate(cmic%ch4_prod_ace_depth_sat(beg:end,1:nlevgrnd))
+	allocate(cmic%ch4_prod_aceto_depth_sat(beg:end,1:nlevgrnd))
 	allocate(cmic%ch4_prod_co2_depth_sat(beg:end,1:nlevgrnd))
 	allocate(cmic%ch4_oxid_o2_depth_sat(beg:end,1:nlevgrnd))
 	allocate(cmic%ch4_oxid_aom_depth_sat(beg:end,1:nlevgrnd))
@@ -4680,6 +4682,7 @@ contains
 	allocate(cmic%h2_surf_netflux_sat(beg:end))
 
 	allocate(cmic%ch4_prod_ace_depth(beg:end,1:nlevgrnd))
+	allocate(cmic%ch4_prod_aceto_depth(beg:end,1:nlevgrnd))
 	allocate(cmic%ch4_prod_co2_depth(beg:end,1:nlevgrnd))
 	allocate(cmic%ch4_oxid_o2_depth(beg:end,1:nlevgrnd))
 	allocate(cmic%ch4_oxid_aom_depth(beg:end,1:nlevgrnd))
@@ -4798,6 +4801,7 @@ contains
 !    cmic%layer_sat_lag(beg:end,1:nlevgrnd) = spval ! To detect file input
 
 	cmic%ch4_prod_ace_depth_unsat(beg:end,1:nlevgrnd) = spval
+	cmic%ch4_prod_aceto_depth_unsat(beg:end,1:nlevgrnd) = spval
 	cmic%ch4_prod_co2_depth_unsat(beg:end,1:nlevgrnd) = spval
 	cmic%ch4_oxid_o2_depth_unsat(beg:end,1:nlevgrnd) = spval
 	cmic%ch4_oxid_aom_depth_unsat(beg:end,1:nlevgrnd) = spval
@@ -4872,6 +4876,7 @@ contains
 	cmic%h2_surf_netflux_unsat(beg:end) = spval
 
 	cmic%ch4_prod_ace_depth_sat(beg:end,1:nlevgrnd) = spval
+	cmic%ch4_prod_aceto_depth_sat(beg:end,1:nlevgrnd) = spval
 	cmic%ch4_prod_co2_depth_sat(beg:end,1:nlevgrnd) = spval
 	cmic%ch4_oxid_o2_depth_sat(beg:end,1:nlevgrnd) = spval
 	cmic%ch4_oxid_aom_depth_sat(beg:end,1:nlevgrnd) = spval
@@ -4912,6 +4917,7 @@ contains
 	cmic%h2_surf_netflux_sat(beg:end) = spval
 
 	cmic%ch4_prod_ace_depth(beg:end,1:nlevgrnd) = spval
+	cmic%ch4_prod_aceto_depth(beg:end,1:nlevgrnd) = spval
 	cmic%ch4_prod_co2_depth(beg:end,1:nlevgrnd) = spval
 	cmic%ch4_oxid_o2_depth(beg:end,1:nlevgrnd) = spval
 	cmic%ch4_oxid_aom_depth(beg:end,1:nlevgrnd) = spval

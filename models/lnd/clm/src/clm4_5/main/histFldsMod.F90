@@ -1925,21 +1925,39 @@ contains
          ptr_col=cmic%ccon_o2s_sat)
 	 
     call hist_addfld2d (fname='CH4_PROD_ACE_DEPTH', units='mol/m3/s', type2d='levgrnd', &
-         avgflag='A', long_name='column ch4 production from acetate acid', &
+         avgflag='A', long_name='total methanogenesis (includes hydrogenotrophic)', &
          ptr_col=cmic%ch4_prod_ace_depth)
     call hist_addfld2d (fname='CH4_PROD_ACE_DEPTH_UNSAT', units='mol/m3/s', type2d='levgrnd', &
-         avgflag='A', long_name='column ch4 production from acetate acid in unsaturated fraction', &
+         avgflag='A', long_name='total methanogenesis (includes hydrogenotrophic) in unsaturated fraction', &
          ptr_col=cmic%ch4_prod_ace_depth_unsat)
     call hist_addfld2d (fname='CH4_PROD_ACE_DEPTH_SAT', units='mol/m3/s', type2d='levgrnd', &
-         avgflag='A', long_name='column ch4 production from acetate acid in saturated fraction', &
+         avgflag='A', long_name='total methanogenesis (includes hydrogenotrophic) in saturated fraction', &
          ptr_col=cmic%ch4_prod_ace_depth_sat)
 	 
+    call hist_addfld2d (fname='CH4_PROD_ACETO_DEPTH', units='mol/m3/s', type2d='levgrnd', &
+         avgflag='A', long_name='true acetoclastic methanogenesis', &
+         ptr_col=cmic%ch4_prod_aceto_depth)
+    call hist_addfld2d (fname='CH4_PROD_TOT_DEPTH', units='mol/m3/s', type2d='levgrnd', &
+         avgflag='A', long_name='total methanogenesis (includes hydrogenotrophic)', &
+         ptr_col=cmic%ch4_prod_ace_depth)
     call hist_addfld2d (fname='CH4_PROD_CO2_DEPTH', units='mol/m3/s', type2d='levgrnd', &
          avgflag='A', long_name='column ch4 production from co2 + h2', &
          ptr_col=cmic%ch4_prod_co2_depth)
+    call hist_addfld2d (fname='CH4_PROD_ACETO_DEPTH_UNSAT', units='mol/m3/s', type2d='levgrnd', &
+         avgflag='A', long_name='true acetoclastic methanogenesis in unsaturated fraction', &
+         ptr_col=cmic%ch4_prod_aceto_depth_unsat)
+    call hist_addfld2d (fname='CH4_PROD_TOT_DEPTH_UNSAT', units='mol/m3/s', type2d='levgrnd', &
+         avgflag='A', long_name='total methanogenesis (includes hydrogenotrophic) in unsaturated fraction', &
+         ptr_col=cmic%ch4_prod_ace_depth_unsat)
     call hist_addfld2d (fname='CH4_PROD_CO2_DEPTH_UNSAT', units='mol/m3/s', type2d='levgrnd', &
          avgflag='A', long_name='column ch4 production from co2 + h2 in saturated fraction', &
          ptr_col=cmic%ch4_prod_co2_depth_unsat)
+    call hist_addfld2d (fname='CH4_PROD_ACETO_DEPTH_SAT', units='mol/m3/s', type2d='levgrnd', &
+         avgflag='A', long_name='true acetoclastic methanogenesis in saturated fraction', &
+         ptr_col=cmic%ch4_prod_aceto_depth_sat)
+    call hist_addfld2d (fname='CH4_PROD_TOT_DEPTH_SAT', units='mol/m3/s', type2d='levgrnd', &
+         avgflag='A', long_name='total methanogenesis (includes hydrogenotrophic) in saturated fraction', &
+         ptr_col=cmic%ch4_prod_ace_depth_sat)
     call hist_addfld2d (fname='CH4_PROD_CO2_DEPTH_SAT', units='mol/m3/s', type2d='levgrnd', &
          avgflag='A', long_name='column ch4 production from co2 + h2 in saturated fraction', &
          ptr_col=cmic%ch4_prod_co2_depth_sat)

@@ -1380,6 +1380,7 @@ if(j >= jwaterhead_unsat(c)) then
 	caces_unsat_prod_h2(c,j)				= H2AceProd
 
 	ch4_prod_ace_depth_unsat(c,j) 			= CH4Prod 
+	cmiciso%ch4_prod_aceto_depth_unsat(c,j) = CH4Prod - H2CH4Prod - HCH4Prod
 	ch4_prod_co2_depth_unsat(c,j) 			= H2CH4Prod
 	ch4_oxid_o2_depth_unsat(c,j) 			= CH4Oxid
 	ch4_oxid_aom_depth_unsat(c,j) 			= AOMCH4Oxid
@@ -1681,6 +1682,7 @@ else
 	caces_unsat_prod_h2(c,j)				= H2AceProd
 	
 	ch4_prod_ace_depth_unsat(c,j) 			= CH4Prod 
+	cmiciso%ch4_prod_aceto_depth_unsat(c,j) = CH4Prod - H2CH4Prod - HCH4Prod
 	ch4_prod_co2_depth_unsat(c,j) 			= H2CH4Prod
 	ch4_oxid_o2_depth_unsat(c,j) 			= CH4Oxid
 	ch4_oxid_aom_depth_unsat(c,j) 			= AOMCH4Oxid
@@ -2237,6 +2239,7 @@ end if  ! end if of the frozen mechanism in trapping gases in soil
 	caces_unsat_prod(c,j)				= AceProd
 	caces_unsat_prod_h2(c,j)				= H2AceProd	
 	ch4_prod_ace_depth_sat(c,j) 			= CH4Prod 
+	cmiciso%ch4_prod_aceto_depth_sat(c,j) = CH4Prod - H2CH4Prod - HCH4Prod
 	ch4_prod_co2_depth_sat(c,j) 			= H2CH4Prod
 	ch4_oxid_o2_depth_sat(c,j) 			= CH4Oxid
 	ch4_oxid_aom_depth_sat(c,j) 			= AOMCH4Oxid
@@ -2667,6 +2670,8 @@ end do
 	ccon_co2s(c,j)			= ccon_co2s_unsat(c,j) * (1.0 - micfinundated)  + ccon_co2s_sat(c,j) * micfinundated
 !write(iulog,*) "Line 2485:", ccon_co2s_unsat(c,j), micfinundated, ccon_co2s_sat(2,j)
 	ch4_prod_ace_depth(c,j)	= ch4_prod_ace_depth_unsat(c,j) * (1.0 - micfinundated) + ch4_prod_ace_depth_sat(c,j) * micfinundated
+	cmiciso%ch4_prod_aceto_depth(c,j) = cmiciso%ch4_prod_aceto_depth_unsat(c,j) * (1.0 - micfinundated) &
+	     + cmiciso%ch4_prod_aceto_depth_sat(c,j) * micfinundated
 	ch4_prod_co2_depth(c,j)	= ch4_prod_co2_depth_unsat(c,j) * (1.0 - micfinundated) + ch4_prod_co2_depth_sat(c,j) * micfinundated
 	ch4_oxid_o2_depth(c,j)	= ch4_oxid_o2_depth_unsat(c,j) * (1.0 - micfinundated) + ch4_oxid_o2_depth_sat(c,j) * micfinundated
 	ch4_oxid_aom_depth(c,j)	= ch4_oxid_aom_depth_unsat(c,j) * (1.0 - micfinundated) + ch4_oxid_aom_depth_sat(c,j) * micfinundated

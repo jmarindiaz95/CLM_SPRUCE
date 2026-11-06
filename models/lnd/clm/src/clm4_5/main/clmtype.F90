@@ -1793,6 +1793,7 @@ type, public :: column_microbe_type
 !   real(r8), pointer :: finundated_lag(:)       			! time-lagged fractional inundated area
 !   real(r8), pointer :: layer_sat_lag(:,:) 				! Lagged saturation status of soil layer in the unsaturated zone (1 = sat)
 
+	real(r8), pointer :: ch4_prod_aceto_depth_unsat(:,:) ! true acetoclastic production, reporting only
 	real(r8), pointer :: ch4_prod_ace_depth_unsat(:,:)	! ch4 production of acecaltic methanonnesis ion status of soil layer in the unsaturated zone (1 = sat)
 	real(r8), pointer :: ch4_prod_co2_depth_unsat(:,:)	! hydrogenotrophic methanogenesis of soil layer in the unsaturated zone (1 = sat)
 	real(r8), pointer :: ch4_oxid_o2_depth_unsat(:,:)	! oxic methanotroph of soil layer in the unsaturated zone (1 = sat)
@@ -1866,6 +1867,7 @@ type, public :: column_microbe_type
 	real(r8), pointer :: h2_surf_dif_unsat(:)			! H2 diffusion transport at surface in the unsaturated zone (1 = sat)
 	real(r8), pointer :: h2_surf_netflux_unsat(:)		! net H2 flux at surface in the unsaturated zone (1 = sat)
 
+	real(r8), pointer :: ch4_prod_aceto_depth_sat(:,:) ! true acetoclastic production, reporting only
 	real(r8), pointer :: ch4_prod_ace_depth_sat(:,:)	! ch4 production of acecaltic methanonnesis ion status of soil layer in the saturated zone (1 = sat)
 	real(r8), pointer :: ch4_prod_co2_depth_sat(:,:)	! hydrogenotrophic methanogenesis of soil layer in the saturated zone (1 = sat)
 	real(r8), pointer :: ch4_oxid_o2_depth_sat(:,:)	! oxic methanotroph of soil layer in the saturated zone (1 = sat)
@@ -1905,6 +1907,7 @@ type, public :: column_microbe_type
 	real(r8), pointer :: h2_surf_dif_sat(:)			! H2 diffusion transport at surface in the saturated zone (1 = sat)
 	real(r8), pointer :: h2_surf_netflux_sat(:)		! net H2 flux at surface in the saturated zone (1 = sat)
 
+	real(r8), pointer :: ch4_prod_aceto_depth(:,:) ! true acetoclastic production, reporting only
 	real(r8), pointer :: ch4_prod_ace_depth(:,:)		! ch4 production of acecaltic methanonnesis ion status of soil layer
 	real(r8), pointer :: ch4_prod_co2_depth(:,:)		! hydrogenotrophic methanogenesis of soil layer
 	real(r8), pointer :: ch4_oxid_o2_depth(:,:)		! oxic methanotroph of soil layer
