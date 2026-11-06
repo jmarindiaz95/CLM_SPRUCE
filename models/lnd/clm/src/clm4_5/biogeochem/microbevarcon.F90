@@ -250,6 +250,7 @@ module microbevarcon
 	logical :: fix_co2_dt = .true.   ! respiration CO2 source to soil CO2 pool: per time step, accumulator reset
 	logical :: fix_ch4_unsat = .true. ! unsaturated fraction: ebullition as a rate (/dt) and plant+ebullition limited to CH4 above m_dCH4min
 	logical :: fix_finund_repart = .true. ! update_finundated: area-conserving repartition of dissolved pools between fractions
+	logical :: fix_unsat_surf = .false. ! route already-removed unsaturated plant/ebullition CH4 to surface; optional trailing switch
 	real(r8) :: m_Fick_ad = 0.75
 	  
 !
@@ -325,6 +326,7 @@ real(r8)::dummy(nummicrobepar)
           if (trim(adjustl(swname)) == 'fix_co2_dt') fix_co2_dt = (swval > 0.5_r8)
           if (trim(adjustl(swname)) == 'fix_ch4_unsat') fix_ch4_unsat = (swval > 0.5_r8)
           if (trim(adjustl(swname)) == 'fix_finund_repart') fix_finund_repart = (swval > 0.5_r8)
+          if (trim(adjustl(swname)) == 'fix_unsat_surf') fix_unsat_surf = (swval > 0.5_r8)
        end do
        call relavu( unitn )
 
@@ -564,6 +566,7 @@ end if
     call mpi_bcast (fix_co2_dt, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (fix_ch4_unsat, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (fix_finund_repart, 1 , MPI_LOGICAL, 0, mpicom, ierr)
+    call mpi_bcast (fix_unsat_surf, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (m_Fick_ad, 1 , MPI_REAL8, 0, mpicom, ierr)
     call mpi_bcast (m_dPlantTrans, 1 , MPI_REAL8, 0, mpicom, ierr)
     
@@ -669,6 +672,7 @@ end if
 	write(iulog,*)'fix_co2_dt = ', fix_co2_dt
 	write(iulog,*)'fix_ch4_unsat = ', fix_ch4_unsat
 	write(iulog,*)'fix_finund_repart = ', fix_finund_repart
+	write(iulog,*)'fix_unsat_surf = ', fix_unsat_surf
 	
 	write(iulog,*)'m_dPlantTrans = ', m_dPlantTrans
 	

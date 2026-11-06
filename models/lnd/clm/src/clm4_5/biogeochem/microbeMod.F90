@@ -1787,7 +1787,9 @@ else
 	h2_surf_dif_unsat(c) 	= h2_surf_dif_unsat(c) * dz(c,jwaterhead_unsat(c))
 
 	do j = 1,nlevsoi
+	if (.not. fix_unsat_surf) then
 	ch4_surf_aere_unsat(c)			= ch4_surf_aere_unsat(c) + ch4_aere_depth_unsat(c,j) * dz(c,j)
+	end if
 !	ch4_surf_ebul_unsat(c) 			= ch4_surf_ebul_unsat(c) + ch4_ebul_depth_unsat(c,j) * dz(c,j)
 	
 	co2_surf_aere_unsat(c)			= co2_surf_aere_unsat(c) + co2_aere_depth_unsat(c,j) * dz(c,j)
@@ -1800,6 +1802,16 @@ else
 	end do
 !end if
 end if  ! end if of the frozen mechanism in trapping gases in soil
+
+	! The layer transport has already removed this CH4. With the switch on,
+	! account for that removal at the surface regardless of the diffusion gate.
+	! Do not remove it again or enable new diffusive transport.
+	if (fix_unsat_surf) then
+	   do j = 1,nlevsoi
+	      ch4_surf_aere_unsat(c) = ch4_surf_aere_unsat(c) + ch4_aere_depth_unsat(c,j) * dz(c,j)
+	      ch4_surf_ebul_unsat(c) = ch4_surf_ebul_unsat(c) + ch4_ebul_depth_unsat(c,j) * dz(c,j)
+	   end do
+	end if
 
 	ch4_surf_netflux_unsat(c) 			= ch4_surf_netflux_unsat(c) + ch4_surf_dif_unsat(c) + ch4_surf_aere_unsat(c) + ch4_surf_ebul_unsat(c)
 	co2_surf_netflux_unsat(c) 			= co2_surf_netflux_unsat(c) + co2_surf_dif_unsat(c) + co2_surf_aere_unsat(c) + co2_surf_ebul_unsat(c)
