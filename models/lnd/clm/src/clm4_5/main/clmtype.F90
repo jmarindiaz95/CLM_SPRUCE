@@ -1826,6 +1826,8 @@ type, public :: column_microbe_type
 	real(r8), pointer :: ch4bud_res_units_unsat(:) ! unit-consistent total or legacy unit mismatch
 	real(r8), pointer :: ch4bud_stock_sat(:)		! CH4 budget diagnostic, stock sat
 	real(r8), pointer :: ch4bud_stock_unsat(:)		! CH4 budget diagnostic, stock unsat
+	real(r8), pointer :: ch4bud_src_legacy_sat(:) ! old double-counted diagnostic source
+	real(r8), pointer :: ch4bud_src_legacy_unsat(:) ! old double-counted diagnostic source
 	real(r8), pointer :: ch4bud_src_sat(:)		! CH4 budget diagnostic, src sat
 	real(r8), pointer :: ch4bud_src_unsat(:)		! CH4 budget diagnostic, src unsat
 	real(r8), pointer :: ch4bud_res_sat(:)		! CH4 budget diagnostic, res sat

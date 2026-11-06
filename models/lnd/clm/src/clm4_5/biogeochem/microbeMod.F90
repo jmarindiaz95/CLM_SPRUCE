@@ -2742,17 +2742,24 @@ end do
            end do
       end do
 
-	! CH4 budget diagnostic (bulk only): end-of-step stock, reported net source, residuals
+	! CH4 budget diagnostic only: ACE is already total methanogenesis.
+	! Retain the old ACE+CO2 source separately; never feed it to prognostic pools.
 	if (isotope == 'bulk') then
 	   call ch4bud_stock(lbc, ubc, num_soilc, filter_soilc, bs1, bu1)   ! bs1/bu1 reused: end-of-step stock
 	   do fcb = 1, num_soilc
 	      cb = filter_soilc(fcb)
 	      cmic%ch4bud_src_sat(cb) = - cmic%ch4_surf_netflux_sat(cb)
+	      cmic%ch4bud_src_legacy_sat(cb) = - cmic%ch4_surf_netflux_sat(cb)
 	      cmic%ch4bud_src_unsat(cb) = - cmic%ch4_surf_netflux_unsat(cb)
+	      cmic%ch4bud_src_legacy_unsat(cb) = - cmic%ch4_surf_netflux_unsat(cb)
 	      do jb = 1, nlevsoi
-	         cmic%ch4bud_src_sat(cb) = cmic%ch4bud_src_sat(cb) + (cmic%ch4_prod_ace_depth_sat(cb,jb) + cmic%ch4_prod_co2_depth_sat(cb,jb) &
+	         cmic%ch4bud_src_legacy_sat(cb) = cmic%ch4bud_src_legacy_sat(cb) + (cmic%ch4_prod_ace_depth_sat(cb,jb) + cmic%ch4_prod_co2_depth_sat(cb,jb) &
 	              - cmic%ch4_oxid_aom_depth_sat(cb,jb) - cmic%ch4_oxid_o2_depth_sat(cb,jb)) * cps%dz(cb,jb)
-	         cmic%ch4bud_src_unsat(cb) = cmic%ch4bud_src_unsat(cb) + (cmic%ch4_prod_ace_depth_unsat(cb,jb) + cmic%ch4_prod_co2_depth_unsat(cb,jb) &
+	         cmic%ch4bud_src_sat(cb) = cmic%ch4bud_src_sat(cb) + (cmic%ch4_prod_ace_depth_sat(cb,jb) &
+	              - cmic%ch4_oxid_aom_depth_sat(cb,jb) - cmic%ch4_oxid_o2_depth_sat(cb,jb)) * cps%dz(cb,jb)
+	         cmic%ch4bud_src_legacy_unsat(cb) = cmic%ch4bud_src_legacy_unsat(cb) + (cmic%ch4_prod_ace_depth_unsat(cb,jb) + cmic%ch4_prod_co2_depth_unsat(cb,jb) &
+	              - cmic%ch4_oxid_aom_depth_unsat(cb,jb) - cmic%ch4_oxid_o2_depth_unsat(cb,jb)) * cps%dz(cb,jb)
+	         cmic%ch4bud_src_unsat(cb) = cmic%ch4bud_src_unsat(cb) + (cmic%ch4_prod_ace_depth_unsat(cb,jb) &
 	              - cmic%ch4_oxid_aom_depth_unsat(cb,jb) - cmic%ch4_oxid_o2_depth_unsat(cb,jb)) * cps%dz(cb,jb)
 	      end do
 	      cmic%ch4bud_res_sat(cb)   = (bs1(cb) - bs0(cb)) / dt - cmic%ch4bud_src_sat(cb)
@@ -2777,7 +2784,7 @@ end do
 	         ch4bud_transport = ch4bud_transport + (cmic%ch4_aere_depth_sat(cb,jb) &
 	              + cmic%ch4_ebul_depth_sat(cb,jb)) * cps%dz(cb,jb)
 	         ch4bud_reaction = ch4bud_reaction + (cmic%ch4_prod_ace_depth_sat(cb,jb) &
-	              + cmic%ch4_prod_co2_depth_sat(cb,jb) - cmic%ch4_oxid_aom_depth_sat(cb,jb) &
+	              - cmic%ch4_oxid_aom_depth_sat(cb,jb) &
 	              - cmic%ch4_oxid_o2_depth_sat(cb,jb)) * cps%dz(cb,jb)
 	      end do
 	      cmic%ch4bud_res_react_sat(cb) = cmic%ch4bud_res_react_sat(cb) - ch4bud_reaction
@@ -2801,7 +2808,7 @@ end do
 	         ch4bud_transport = ch4bud_transport + (cmic%ch4_aere_depth_unsat(cb,jb) &
 	              + cmic%ch4_ebul_depth_unsat(cb,jb)) * cps%dz(cb,jb)
 	         ch4bud_reaction = ch4bud_reaction + (cmic%ch4_prod_ace_depth_unsat(cb,jb) &
-	              + cmic%ch4_prod_co2_depth_unsat(cb,jb) - cmic%ch4_oxid_aom_depth_unsat(cb,jb) &
+	              - cmic%ch4_oxid_aom_depth_unsat(cb,jb) &
 	              - cmic%ch4_oxid_o2_depth_unsat(cb,jb)) * cps%dz(cb,jb)
 	      end do
 	      cmic%ch4bud_res_react_unsat(cb) = cmic%ch4bud_res_react_unsat(cb) - ch4bud_reaction

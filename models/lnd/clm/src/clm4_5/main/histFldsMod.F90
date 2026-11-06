@@ -1776,6 +1776,12 @@ contains
     call hist_addfld1d (fname='CH4BUD_STOCK_UNSAT', units='gC/m2',  &
          avgflag='A', long_name='column CH4 stock (sum over soil layers of concentration x dz) at the end of the step, unsaturated fraction', &
          ptr_col=cmic%ch4bud_stock_unsat)
+    call hist_addfld1d (fname='CH4BUD_SRC_LEGACY_SAT', units='mol/m2/s', &
+         avgflag='A', long_name='legacy source with hydrogenotrophic production counted twice; diagnostic only', &
+         ptr_col=cmic%ch4bud_src_legacy_sat)
+    call hist_addfld1d (fname='CH4BUD_SRC_LEGACY_UNSAT', units='mol/m2/s', &
+         avgflag='A', long_name='legacy source with hydrogenotrophic production counted twice; diagnostic only', &
+         ptr_col=cmic%ch4bud_src_legacy_unsat)
     call hist_addfld1d (fname='CH4BUD_SRC_SAT', units='mol/m2/s',  &
          avgflag='A', long_name='production - AOM - aerobic oxidation - surface net flux reported for the step, saturated fraction', &
          ptr_col=cmic%ch4bud_src_sat)

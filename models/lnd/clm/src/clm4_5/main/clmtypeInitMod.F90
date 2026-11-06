@@ -4600,7 +4600,9 @@ contains
 	allocate(cmic%ch4bud_stock_sat(beg:end))
 	allocate(cmic%ch4bud_stock_unsat(beg:end))
 	allocate(cmic%ch4bud_src_sat(beg:end))
+	allocate(cmic%ch4bud_src_legacy_sat(beg:end))
 	allocate(cmic%ch4bud_src_unsat(beg:end))
+	allocate(cmic%ch4bud_src_legacy_unsat(beg:end))
 	allocate(cmic%ch4bud_res_sat(beg:end))
 	allocate(cmic%ch4bud_res_unsat(beg:end))
 	allocate(cmic%ch4bud_resx_sat(beg:end))
@@ -4830,7 +4832,9 @@ contains
 	cmic%ch4bud_stock_sat(beg:end) = spval
 	cmic%ch4bud_stock_unsat(beg:end) = spval
 	cmic%ch4bud_src_sat(beg:end) = spval
+	cmic%ch4bud_src_legacy_sat(beg:end) = spval
 	cmic%ch4bud_src_unsat(beg:end) = spval
+	cmic%ch4bud_src_legacy_unsat(beg:end) = spval
 	cmic%ch4bud_res_sat(beg:end) = spval
 	cmic%ch4bud_res_unsat(beg:end) = spval
 	cmic%ch4bud_resx_sat(beg:end) = spval
