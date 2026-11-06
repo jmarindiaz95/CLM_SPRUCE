@@ -4605,6 +4605,22 @@ contains
 	allocate(cmic%ch4bud_ddif_unsat(beg:end))
 	allocate(cmic%ch4bud_dlat_sat(beg:end))
 	allocate(cmic%ch4bud_dlat_unsat(beg:end))
+	allocate(cmic%ch4bud_res_pre_sat(beg:end))
+	allocate(cmic%ch4bud_res_pre_unsat(beg:end))
+	allocate(cmic%ch4bud_res_react_sat(beg:end))
+	allocate(cmic%ch4bud_res_react_unsat(beg:end))
+	allocate(cmic%ch4bud_res_remove_sat(beg:end))
+	allocate(cmic%ch4bud_res_remove_unsat(beg:end))
+	allocate(cmic%ch4bud_res_clip_sat(beg:end))
+	allocate(cmic%ch4bud_res_clip_unsat(beg:end))
+	allocate(cmic%ch4bud_res_move_sat(beg:end))
+	allocate(cmic%ch4bud_res_move_unsat(beg:end))
+	allocate(cmic%ch4bud_res_surf_sat(beg:end))
+	allocate(cmic%ch4bud_res_surf_unsat(beg:end))
+	allocate(cmic%ch4bud_res_report_sat(beg:end))
+	allocate(cmic%ch4bud_res_report_unsat(beg:end))
+	allocate(cmic%ch4bud_res_other_sat(beg:end))
+	allocate(cmic%ch4bud_res_other_unsat(beg:end))
 	allocate(cmic%co2_surf_aere_unsat(beg:end))
 	allocate(cmic%co2_surf_ebul_unsat(beg:end))
 	allocate(cmic%co2_surf_dif_unsat(beg:end))
@@ -4815,6 +4831,22 @@ contains
 	cmic%ch4bud_ddif_unsat(beg:end) = spval
 	cmic%ch4bud_dlat_sat(beg:end) = spval
 	cmic%ch4bud_dlat_unsat(beg:end) = spval
+	cmic%ch4bud_res_pre_sat(beg:end) = spval
+	cmic%ch4bud_res_pre_unsat(beg:end) = spval
+	cmic%ch4bud_res_react_sat(beg:end) = spval
+	cmic%ch4bud_res_react_unsat(beg:end) = spval
+	cmic%ch4bud_res_remove_sat(beg:end) = spval
+	cmic%ch4bud_res_remove_unsat(beg:end) = spval
+	cmic%ch4bud_res_clip_sat(beg:end) = spval
+	cmic%ch4bud_res_clip_unsat(beg:end) = spval
+	cmic%ch4bud_res_move_sat(beg:end) = spval
+	cmic%ch4bud_res_move_unsat(beg:end) = spval
+	cmic%ch4bud_res_surf_sat(beg:end) = spval
+	cmic%ch4bud_res_surf_unsat(beg:end) = spval
+	cmic%ch4bud_res_report_sat(beg:end) = spval
+	cmic%ch4bud_res_report_unsat(beg:end) = spval
+	cmic%ch4bud_res_other_sat(beg:end) = spval
+	cmic%ch4bud_res_other_unsat(beg:end) = spval
 	cmic%co2_surf_aere_unsat(beg:end) = spval
 	cmic%co2_surf_ebul_unsat(beg:end) = spval
 	cmic%co2_surf_dif_unsat(beg:end) = spval

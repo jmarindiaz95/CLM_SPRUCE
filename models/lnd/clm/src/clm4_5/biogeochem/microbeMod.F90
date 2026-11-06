@@ -138,6 +138,7 @@ implicit none
 	character(len=*), intent(in) :: isotope  ! 'bulk', 'c13' or 'c14'
 	real(r8) :: bs0(lbc:ubc), bu0(lbc:ubc), bs1(lbc:ubc), bu1(lbc:ubc), bs2(lbc:ubc), bu2(lbc:ubc), bs3(lbc:ubc), bu3(lbc:ubc) ! CH4 budget stocks
 	integer  :: fcb, cb, jb   ! CH4 budget loop indices
+	real(r8) :: ch4bud_before, ch4bud_raw, ch4bud_transport, ch4bud_reaction
 ! !CALLED FROM:
 ! driver.F90
 !
@@ -922,6 +923,25 @@ implicit none
 	   end do
 	end if
 
+	! Block diagnostics only: accumulators never feed prognostic calculations.
+	if (isotope == 'bulk') then
+	   cmic%ch4bud_res_pre_sat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_pre_unsat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_react_sat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_react_unsat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_remove_sat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_remove_unsat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_clip_sat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_clip_unsat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_move_sat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_move_unsat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_surf_sat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_surf_unsat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_report_sat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_report_unsat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_other_sat(lbc:ubc) = 0._r8
+	   cmic%ch4bud_res_other_unsat(lbc:ubc) = 0._r8
+	end if
 !~ do fc = 1,num_soilc
 !~ c = filter_soilc(fc)
 	!~ do j = 1,nlevsoi
@@ -1257,13 +1277,25 @@ if(j >= jwaterhead_unsat(c)) then
 	AOMCH4Oxid = ccon_ch4s_unsat(c,j)/dt
 	end if	
 	
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = ccon_ch4s_unsat(c,j) + CH4Prod * dt
+	if (isotope == 'bulk') cmic%ch4bud_res_react_unsat(c) = cmic%ch4bud_res_react_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
 	
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = ccon_ch4s_unsat(c,j) - CH4Oxid * dt
+	if (isotope == 'bulk') cmic%ch4bud_res_react_unsat(c) = cmic%ch4bud_res_react_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = max(0._r8, ccon_ch4s_unsat(c,j))
+	if (isotope == 'bulk') cmic%ch4bud_res_clip_unsat(c) = cmic%ch4bud_res_clip_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
 
 	if(ccon_ch4s_unsat(c,j) < 0._r8) then
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = 0._r8
+	if (isotope == 'bulk') cmic%ch4bud_res_clip_unsat(c) = cmic%ch4bud_res_clip_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
 	end if
 	
 	if (fix_ch4_unsat) then
@@ -1274,7 +1306,10 @@ if(j >= jwaterhead_unsat(c)) then
 	CH4Ebull = CH4Ebull * tem4
 	end if
 	end if
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = ccon_ch4s_unsat(c,j) - CH4PlantFlux * dt - CH4Ebull * dt
+	if (isotope == 'bulk') cmic%ch4bud_res_remove_unsat(c) = cmic%ch4bud_res_remove_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
 	
 	ccon_o2s_unsat(c,j) = ccon_o2s_unsat(c,j) - (AerO2Cons + CH4O2Cons) * dt
 	if(ccon_o2s_unsat(c,j) < 0._r8) then
@@ -1298,8 +1333,14 @@ if(j >= jwaterhead_unsat(c)) then
 	end if
 	
 	! CH4 update
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = ccon_ch4s_unsat(c,j) - AOMCH4Oxid*dt
+	if (isotope == 'bulk') cmic%ch4bud_res_react_unsat(c) = cmic%ch4bud_res_react_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = max(0._r8, ccon_ch4s_unsat(c,j))
+	if (isotope == 'bulk') cmic%ch4bud_res_clip_unsat(c) = cmic%ch4bud_res_clip_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
 	
 !	// For Microbe dyndamics
 	AceMethanogenGrowth = m_dYAceMethanogens * AceCons * pHeffect
@@ -1500,7 +1541,10 @@ else
 	
 	CH4Prod = max(0._r8, CH4Prod)
 	
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = ccon_ch4s_unsat(c,j) + CH4Prod * dt
+	if (isotope == 'bulk') cmic%ch4bud_res_react_unsat(c) = cmic%ch4bud_res_react_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
 
 	CH4Oxid = m_dGrowRMethanotrophs / m_dYMethanotrophs * caerch4bios_unsat(c,j) &
 	* ccon_ch4s_unsat(c,j) / (ccon_ch4s_unsat(c,j) + m_dKCH4OxidCH4) &
@@ -1518,12 +1562,21 @@ else
 
 	CH4Oxid = max(0._r8 ,CH4Oxid)
 
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = ccon_ch4s_unsat(c,j) - CH4Oxid * dt
+	if (isotope == 'bulk') cmic%ch4bud_res_react_unsat(c) = cmic%ch4bud_res_react_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
 
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = max(0._r8, ccon_ch4s_unsat(c,j))
+	if (isotope == 'bulk') cmic%ch4bud_res_clip_unsat(c) = cmic%ch4bud_res_clip_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
 
 	if(ccon_ch4s_unsat(c,j) < 0) then
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = 0
+	if (isotope == 'bulk') cmic%ch4bud_res_clip_unsat(c) = cmic%ch4bud_res_clip_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
 	end if
 	
 	CH4PlantFlux = 0._r8
@@ -1576,8 +1629,14 @@ else
 	AOMCH4Oxid = ccon_ch4s_unsat(c,j)/dt
 	end if	
 		
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = ccon_ch4s_unsat(c,j) - AOMCH4Oxid*dt
+	if (isotope == 'bulk') cmic%ch4bud_res_react_unsat(c) = cmic%ch4bud_res_react_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = max(0._r8, ccon_ch4s_unsat(c,j))
+	if (isotope == 'bulk') cmic%ch4bud_res_clip_unsat(c) = cmic%ch4bud_res_clip_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
 	
 !	// For Microbe dyndamics
 	AceMethanogenGrowth = m_dYAceMethanogens * AceCons * pHeffect
@@ -1700,7 +1759,10 @@ if((soiltemp(c,jwaterhead_unsat(c)) < SHR_CONST_TKFRZ) .or. (jwaterhead_unsat(c)
 !	o2_surf_aere_unsat(c) 	= 0._r8	
 else
 	ch4_surf_dif_unsat(c) 	= (ccon_ch4s_unsat(c,j) - tem1)/dt	! max(0._r8, (ccon_ch4s_unsat(c,1) - tem1))  ! solubility of ch4 is 0.0000227g/L
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,jwaterhead_unsat(c))
 	ccon_ch4s_unsat(c,jwaterhead_unsat(c)) = ccon_ch4s_unsat(c,jwaterhead_unsat(c)) - ch4_surf_dif_unsat(c) * dt
+	if (isotope == 'bulk') cmic%ch4bud_res_surf_unsat(c) = cmic%ch4bud_res_surf_unsat(c) &
+	     + (ccon_ch4s_unsat(c,jwaterhead_unsat(c)) - ch4bud_before) * dz(c,jwaterhead_unsat(c)) / dt
 	ch4_surf_dif_unsat(c) 	= ch4_surf_dif_unsat(c) * dz(c,jwaterhead_unsat(c))
 
 	o2_surf_dif_unsat(c) 	= (ccon_o2s_unsat(c,jwaterhead_unsat(c)) - tem2)/dt		! max(0._r8, (ccon_o2s_unsat(c,1) - tem4))  ! solubility of ch4 is 0.00004/L
@@ -1750,7 +1812,10 @@ end if  ! end if of the frozen mechanism in trapping gases in soil
 	caerch4bios_unsat(c,j) 			= caerch4bios_unsat(c,j) * 12.		! convert from mmol/m3 to gC/m3
 	canaerch4bios_unsat(c,j) 			= canaerch4bios_unsat(c,j) * 12.	! convert from mmol/m3 to gC/m3
 	ccon_o2s_unsat(c,j) 				= ccon_o2s_unsat(c,j) * 32.		! convert from mmol/m3 to gC/m3
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) 			= ccon_ch4s_unsat(c,j) * 12.		! convert from mmol/m3 to gC/m3
+	if (isotope == 'bulk') cmic%ch4bud_res_other_unsat(c) = cmic%ch4bud_res_other_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
 	ccon_h2s_unsat(c,j) 				= ccon_h2s_unsat(c,j) * 2.		! convert from mmol/m3 to gC/m3
 	ccon_co2s_unsat(c,j) 			= ccon_co2s_unsat(c,j) * 12.		! convert from mmol/m3 to gC/m3
 	end do
@@ -1978,7 +2043,10 @@ end if  ! end if of the frozen mechanism in trapping gases in soil
 	
 	CH4Prod = max(0._r8, CH4Prod)
 	
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,j)
 	ccon_ch4s_sat(c,j) = ccon_ch4s_sat(c,j) + CH4Prod * dt
+	if (isotope == 'bulk') cmic%ch4bud_res_react_sat(c) = cmic%ch4bud_res_react_sat(c) &
+	     + (ccon_ch4s_sat(c,j) - ch4bud_before) * dz(c,j) / dt
 
 	CH4Oxid = m_dGrowRMethanotrophs / m_dYMethanotrophs * caerch4bios_sat(c,j) &
 	* ccon_ch4s_sat(c,j) / (ccon_ch4s_sat(c,j) + m_dKCH4OxidCH4) &
@@ -1996,12 +2064,21 @@ end if  ! end if of the frozen mechanism in trapping gases in soil
 
 	CH4Oxid = max(0._r8, CH4Oxid)
 	
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,j)
 	ccon_ch4s_sat(c,j) = ccon_ch4s_sat(c,j) - CH4Oxid * dt
+	if (isotope == 'bulk') cmic%ch4bud_res_react_sat(c) = cmic%ch4bud_res_react_sat(c) &
+	     + (ccon_ch4s_sat(c,j) - ch4bud_before) * dz(c,j) / dt
 
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,j)
 	ccon_ch4s_sat(c,j) = max(0._r8, ccon_ch4s_sat(c,j))
+	if (isotope == 'bulk') cmic%ch4bud_res_clip_sat(c) = cmic%ch4bud_res_clip_sat(c) &
+	     + (ccon_ch4s_sat(c,j) - ch4bud_before) * dz(c,j) / dt
 
 	if(ccon_ch4s_sat(c,j) < 0) then
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,j)
 	ccon_ch4s_sat(c,j) = 0
+	if (isotope == 'bulk') cmic%ch4bud_res_clip_sat(c) = cmic%ch4bud_res_clip_sat(c) &
+	     + (ccon_ch4s_sat(c,j) - ch4bud_before) * dz(c,j) / dt
 	end if
 	
 	if(soiltemp(c,jwaterhead_unsat(c)) > -0.1 .and. ccon_ch4s_sat(c,j) > m_dCH4min/1.0) then
@@ -2017,16 +2094,25 @@ end if  ! end if of the frozen mechanism in trapping gases in soil
 !	CH4Ebull = min(CH4Ebull, ccon_ch4s_sat(c,j) / 2.0)
 	
 	if((ccon_ch4s_sat(c,j) - m_dCH4min) > (CH4PlantFlux + CH4Ebull) * dt) then
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,j)
 	ccon_ch4s_sat(c,j) = ccon_ch4s_sat(c,j) - CH4PlantFlux * dt - CH4Ebull * dt
+	if (isotope == 'bulk') cmic%ch4bud_res_remove_sat(c) = cmic%ch4bud_res_remove_sat(c) &
+	     + (ccon_ch4s_sat(c,j) - ch4bud_before) * dz(c,j) / dt
 	else
 	tem4 = (ccon_ch4s_sat(c,j) - m_dCH4min) / ((CH4PlantFlux + CH4Ebull) * dt)
 	tem4 = max(0._r8 , tem4)
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,j)
 	ccon_ch4s_sat(c,j) = ccon_ch4s_sat(c,j) - (CH4PlantFlux + CH4Ebull) * tem4 * dt
+	if (isotope == 'bulk') cmic%ch4bud_res_remove_sat(c) = cmic%ch4bud_res_remove_sat(c) &
+	     + (ccon_ch4s_sat(c,j) - ch4bud_before) * dz(c,j) / dt
 	CH4PlantFlux = CH4PlantFlux * tem4
 	CH4Ebull = CH4Ebull * tem4
 	endif
 	
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,j)
 	ccon_ch4s_sat(c,j) = max(0._r8 , ccon_ch4s_sat(c,j))
+	if (isotope == 'bulk') cmic%ch4bud_res_clip_sat(c) = cmic%ch4bud_res_clip_sat(c) &
+	     + (ccon_ch4s_sat(c,j) - ch4bud_before) * dz(c,j) / dt
 
 	!	// For O2 dyndamics
 	AerO2Cons = m_drAer * ACCO2Prod
@@ -2100,8 +2186,14 @@ end if  ! end if of the frozen mechanism in trapping gases in soil
 	AOMCH4Oxid = ccon_ch4s_sat(c,j) / dt
 	end if	
 		
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,j)
 	ccon_ch4s_sat(c,j) = ccon_ch4s_sat(c,j) - AOMCH4Oxid * dt
+	if (isotope == 'bulk') cmic%ch4bud_res_react_sat(c) = cmic%ch4bud_res_react_sat(c) &
+	     + (ccon_ch4s_sat(c,j) - ch4bud_before) * dz(c,j) / dt
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,j)
 	ccon_ch4s_sat(c,j) = max(0._r8, ccon_ch4s_sat(c,j))
+	if (isotope == 'bulk') cmic%ch4bud_res_clip_sat(c) = cmic%ch4bud_res_clip_sat(c) &
+	     + (ccon_ch4s_sat(c,j) - ch4bud_before) * dz(c,j) / dt
 	
 !	// For Microbe dyndamics
 	AceMethanogenGrowth = m_dYAceMethanogens * AceCons * pHeffect
@@ -2221,7 +2313,10 @@ if(soiltemp(c,1) < SHR_CONST_TKFRZ) then
 	h2_surf_dif_sat(c) 				= 0._r8
 else
 	ch4_surf_dif_sat(c) = (ccon_ch4s_sat(c,1) - tem1) / dt !* (2.0 ** ((soiltemp(c,j) - 286.65) / 10.)) 		!max(0._r8, (ccon_ch4s_sat(c,1) - tem1))  ! solubility of ch4 is 0.0000227g/L
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,1)
 	ccon_ch4s_sat(c,1) = ccon_ch4s_sat(c,1) - ch4_surf_dif_sat(c) * dt
+	if (isotope == 'bulk') cmic%ch4bud_res_surf_sat(c) = cmic%ch4bud_res_surf_sat(c) &
+	     + (ccon_ch4s_sat(c,1) - ch4bud_before) * dz(c,1) / dt
 	ch4_surf_dif_sat(c) = ch4_surf_dif_sat(c) * dz(c,1)
 
 	o2_surf_dif_sat(c) = (ccon_o2s_sat(c,1) - tem2) / dt !* (2.0 ** ((soiltemp(c,j) - 286.65) / 10.)) 			!max(0._r8, (ccon_o2s_sat(c,1) - tem4))  ! solubility of ch4 is 0.00004/L
@@ -2259,8 +2354,14 @@ else
 		co2_ebul_depth_unsat(c,j) = max(0._r8, co2_ebul_depth_unsat(c,j))
 		h2_ebul_depth_unsat(c,j) = max(0._r8, h2_ebul_depth_unsat(c,j))
 		
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j-1)
 		ccon_ch4s_unsat(c,j-1) = (ccon_ch4s_unsat(c,j-1) * dz(c,j-1) + ch4_ebul_depth_unsat(c,j)) / dz(c,j-1)
+	if (isotope == 'bulk') cmic%ch4bud_res_move_unsat(c) = cmic%ch4bud_res_move_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j-1) - ch4bud_before) * dz(c,j-1) / dt
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 		ccon_ch4s_unsat(c,j) = (ccon_ch4s_unsat(c,j) * dz(c,j) - ch4_ebul_depth_unsat(c,j)) / dz(c,j)
+	if (isotope == 'bulk') cmic%ch4bud_res_move_unsat(c) = cmic%ch4bud_res_move_unsat(c) &
+	     + (ccon_ch4s_unsat(c,j) - ch4bud_before) * dz(c,j) / dt
 		
 !		ccon_o2s_unsat(c,j-1) = (ccon_o2s_unsat(c,j-1) * dz(c,j-1) + o2_ebul_depth_unsat(c,j)) / dz(c,j-1)
 !		ccon_o2s_unsat(c,j) = (ccon_o2s_unsat(c,j) * dz(c,j) - o2_ebul_depth_unsat(c,j)) / dz(c,j)
@@ -2277,8 +2378,14 @@ else
 		co2_ebul_depth_sat(c,j) = max(0._r8, co2_ebul_depth_sat(c,j))
 		h2_ebul_depth_sat(c,j) = max(0._r8, h2_ebul_depth_sat(c,j))
 		
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,j-1)
 		ccon_ch4s_sat(c,j-1) = (ccon_ch4s_sat(c,j-1) * dz(c,j-1) + ch4_ebul_depth_sat(c,j) * dz(c,j)) / dz(c,j-1)
+	if (isotope == 'bulk') cmic%ch4bud_res_move_sat(c) = cmic%ch4bud_res_move_sat(c) &
+	     + (ccon_ch4s_sat(c,j-1) - ch4bud_before) * dz(c,j-1) / dt
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,j)
 		ccon_ch4s_sat(c,j) = (ccon_ch4s_sat(c,j) * dz(c,j) - ch4_ebul_depth_sat(c,j) * dz(c,j)) / dz(c,j)
+	if (isotope == 'bulk') cmic%ch4bud_res_move_sat(c) = cmic%ch4bud_res_move_sat(c) &
+	     + (ccon_ch4s_sat(c,j) - ch4bud_before) * dz(c,j) / dt
 		
 !		ccon_o2s_sat(c,j-1) = (ccon_o2s_sat(c,j-1) * dz(c,j-1) + o2_ebul_depth_sat(c,j)) / dz(c,j-1)
 !		ccon_o2s_sat(c,j) = (ccon_o2s_sat(c,j) * dz(c,j) - o2_ebul_depth_sat(c,j)) / dz(c,j)
@@ -2325,7 +2432,10 @@ end do
 	caerch4bios_sat(c,j) 		= caerch4bios_sat(c,j) * 12. 	!/ dz(c,j)
 	canaerch4bios_sat(c,j) 	= canaerch4bios_sat(c,j) * 12. 	!/ dz(c,j)
 	ccon_o2s_sat(c,j) 		= ccon_o2s_sat(c,j) * 32. 		!/ dz(c,j)
+	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_sat(c,j)
 	ccon_ch4s_sat(c,j) 		= ccon_ch4s_sat(c,j) * 12. 		!/ dz(c,j)
+	if (isotope == 'bulk') cmic%ch4bud_res_other_sat(c) = cmic%ch4bud_res_other_sat(c) &
+	     + (ccon_ch4s_sat(c,j) - ch4bud_before) * dz(c,j) / dt
 	ccon_h2s_sat(c,j) 		= ccon_h2s_sat(c,j) * 2. 		!/ dz(c,j)
 	ccon_co2s_sat(c,j) 		= ccon_co2s_sat(c,j) * 12. 		!/ dz(c,j)
 	end do
@@ -2653,6 +2763,51 @@ end do
 	      end do
 	      cmic%ch4bud_res_sat(cb)   = (bs1(cb) - bs0(cb)) / dt - cmic%ch4bud_src_sat(cb)
 	      cmic%ch4bud_res_unsat(cb) = (bu1(cb) - bu0(cb)) / dt - cmic%ch4bud_src_unsat(cb)
+	      ! Raw assignment deltas telescope from the post-lateral snapshot.
+	      ch4bud_raw = cmic%ch4bud_res_react_sat(cb) &
+	           + cmic%ch4bud_res_remove_sat(cb) &
+	           + cmic%ch4bud_res_clip_sat(cb) &
+	           + cmic%ch4bud_res_move_sat(cb) &
+	           + cmic%ch4bud_res_surf_sat(cb) &
+	           + cmic%ch4bud_res_other_sat(cb)
+	      cmic%ch4bud_res_other_sat(cb) = cmic%ch4bud_res_other_sat(cb) &
+	           + (bs1(cb)-bs3(cb))/dt - ch4bud_raw
+	      cmic%ch4bud_res_pre_sat(cb) = (bs3(cb)-bs0(cb))/dt
+	      ch4bud_transport = 0._r8; ch4bud_reaction = 0._r8
+	      do jb = 1,nlevsoi
+	         ch4bud_transport = ch4bud_transport + (cmic%ch4_aere_depth_sat(cb,jb) &
+	              + cmic%ch4_ebul_depth_sat(cb,jb)) * cps%dz(cb,jb)
+	         ch4bud_reaction = ch4bud_reaction + (cmic%ch4_prod_ace_depth_sat(cb,jb) &
+	              + cmic%ch4_prod_co2_depth_sat(cb,jb) - cmic%ch4_oxid_aom_depth_sat(cb,jb) &
+	              - cmic%ch4_oxid_o2_depth_sat(cb,jb)) * cps%dz(cb,jb)
+	      end do
+	      cmic%ch4bud_res_react_sat(cb) = cmic%ch4bud_res_react_sat(cb) - ch4bud_reaction
+	      cmic%ch4bud_res_remove_sat(cb) = cmic%ch4bud_res_remove_sat(cb) + ch4bud_transport
+	      cmic%ch4bud_res_surf_sat(cb) = cmic%ch4bud_res_surf_sat(cb) + cmic%ch4_surf_dif_sat(cb)
+	      cmic%ch4bud_res_report_sat(cb) = cmic%ch4_surf_netflux_sat(cb) &
+	           - ch4bud_transport - cmic%ch4_surf_dif_sat(cb)
+	      ch4bud_raw = cmic%ch4bud_res_react_unsat(cb) &
+	           + cmic%ch4bud_res_remove_unsat(cb) &
+	           + cmic%ch4bud_res_clip_unsat(cb) &
+	           + cmic%ch4bud_res_move_unsat(cb) &
+	           + cmic%ch4bud_res_surf_unsat(cb) &
+	           + cmic%ch4bud_res_other_unsat(cb)
+	      cmic%ch4bud_res_other_unsat(cb) = cmic%ch4bud_res_other_unsat(cb) &
+	           + (bu1(cb)-bu3(cb))/dt - ch4bud_raw
+	      cmic%ch4bud_res_pre_unsat(cb) = (bu3(cb)-bu0(cb))/dt
+	      ch4bud_transport = 0._r8; ch4bud_reaction = 0._r8
+	      do jb = 1,nlevsoi
+	         ch4bud_transport = ch4bud_transport + (cmic%ch4_aere_depth_unsat(cb,jb) &
+	              + cmic%ch4_ebul_depth_unsat(cb,jb)) * cps%dz(cb,jb)
+	         ch4bud_reaction = ch4bud_reaction + (cmic%ch4_prod_ace_depth_unsat(cb,jb) &
+	              + cmic%ch4_prod_co2_depth_unsat(cb,jb) - cmic%ch4_oxid_aom_depth_unsat(cb,jb) &
+	              - cmic%ch4_oxid_o2_depth_unsat(cb,jb)) * cps%dz(cb,jb)
+	      end do
+	      cmic%ch4bud_res_react_unsat(cb) = cmic%ch4bud_res_react_unsat(cb) - ch4bud_reaction
+	      cmic%ch4bud_res_remove_unsat(cb) = cmic%ch4bud_res_remove_unsat(cb) + ch4bud_transport
+	      cmic%ch4bud_res_surf_unsat(cb) = cmic%ch4bud_res_surf_unsat(cb) + cmic%ch4_surf_dif_unsat(cb)
+	      cmic%ch4bud_res_report_unsat(cb) = cmic%ch4_surf_netflux_unsat(cb) &
+	           - ch4bud_transport - cmic%ch4_surf_dif_unsat(cb)
 	      cmic%ch4bud_stock_sat(cb) = bs1(cb); cmic%ch4bud_stock_unsat(cb) = bu1(cb)
 	   end do
 	end if

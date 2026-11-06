@@ -1710,6 +1710,54 @@ contains
     call hist_addfld1d (fname='CH4_SURF_NETFLUX_UNSAT', units='mol/m2/s',  &
          avgflag='A', long_name='net flux of surface CH4 flux for non-inundated area; (+ to atm)', &
          ptr_col=cmic%ch4_surf_netflux_unsat)
+    call hist_addfld1d (fname='CH4BUD_RES_PRE_SAT', units='mol/m2/s', &
+         avgflag='A', long_name='pre-loop diffusion and lateral stock change, sat', &
+         ptr_col=cmic%ch4bud_res_pre_sat)
+    call hist_addfld1d (fname='CH4BUD_RES_PRE_UNSAT', units='mol/m2/s', &
+         avgflag='A', long_name='pre-loop diffusion and lateral stock change, unsat', &
+         ptr_col=cmic%ch4bud_res_pre_unsat)
+    call hist_addfld1d (fname='CH4BUD_RES_REACT_SAT', units='mol/m2/s', &
+         avgflag='A', long_name='reaction stock change minus reported production and oxidation, sat', &
+         ptr_col=cmic%ch4bud_res_react_sat)
+    call hist_addfld1d (fname='CH4BUD_RES_REACT_UNSAT', units='mol/m2/s', &
+         avgflag='A', long_name='reaction stock change minus reported production and oxidation, unsat', &
+         ptr_col=cmic%ch4bud_res_react_unsat)
+    call hist_addfld1d (fname='CH4BUD_RES_REMOVE_SAT', units='mol/m2/s', &
+         avgflag='A', long_name='plant and ebullition removal minus layer flux accounting, sat', &
+         ptr_col=cmic%ch4bud_res_remove_sat)
+    call hist_addfld1d (fname='CH4BUD_RES_REMOVE_UNSAT', units='mol/m2/s', &
+         avgflag='A', long_name='plant and ebullition removal minus layer flux accounting, unsat', &
+         ptr_col=cmic%ch4bud_res_remove_unsat)
+    call hist_addfld1d (fname='CH4BUD_RES_CLIP_SAT', units='mol/m2/s', &
+         avgflag='A', long_name='CH4 created by nonnegative concentration clipping, sat', &
+         ptr_col=cmic%ch4bud_res_clip_sat)
+    call hist_addfld1d (fname='CH4BUD_RES_CLIP_UNSAT', units='mol/m2/s', &
+         avgflag='A', long_name='CH4 created by nonnegative concentration clipping, unsat', &
+         ptr_col=cmic%ch4bud_res_clip_unsat)
+    call hist_addfld1d (fname='CH4BUD_RES_MOVE_SAT', units='mol/m2/s', &
+         avgflag='A', long_name='net stock change during gas move up, sat', &
+         ptr_col=cmic%ch4bud_res_move_sat)
+    call hist_addfld1d (fname='CH4BUD_RES_MOVE_UNSAT', units='mol/m2/s', &
+         avgflag='A', long_name='net stock change during gas move up, unsat', &
+         ptr_col=cmic%ch4bud_res_move_unsat)
+    call hist_addfld1d (fname='CH4BUD_RES_SURF_SAT', units='mol/m2/s', &
+         avgflag='A', long_name='surface diffusion stock change plus reported diffusion, sat', &
+         ptr_col=cmic%ch4bud_res_surf_sat)
+    call hist_addfld1d (fname='CH4BUD_RES_SURF_UNSAT', units='mol/m2/s', &
+         avgflag='A', long_name='surface diffusion stock change plus reported diffusion, unsat', &
+         ptr_col=cmic%ch4bud_res_surf_unsat)
+    call hist_addfld1d (fname='CH4BUD_RES_REPORT_SAT', units='mol/m2/s', &
+         avgflag='A', long_name='surface net flux minus layer transport and surface diffusion, sat', &
+         ptr_col=cmic%ch4bud_res_report_sat)
+    call hist_addfld1d (fname='CH4BUD_RES_REPORT_UNSAT', units='mol/m2/s', &
+         avgflag='A', long_name='surface net flux minus layer transport and surface diffusion, unsat', &
+         ptr_col=cmic%ch4bud_res_report_unsat)
+    call hist_addfld1d (fname='CH4BUD_RES_OTHER_SAT', units='mol/m2/s', &
+         avgflag='A', long_name='remaining uninstrumented stock change, sat', &
+         ptr_col=cmic%ch4bud_res_other_sat)
+    call hist_addfld1d (fname='CH4BUD_RES_OTHER_UNSAT', units='mol/m2/s', &
+         avgflag='A', long_name='remaining uninstrumented stock change, unsat', &
+         ptr_col=cmic%ch4bud_res_other_unsat)
     call hist_addfld1d (fname='CH4BUD_STOCK_SAT', units='mol/m2',  &
          avgflag='A', long_name='column CH4 stock (sum over soil layers of concentration x dz) at the end of the step, saturated fraction', &
          ptr_col=cmic%ch4bud_stock_sat)

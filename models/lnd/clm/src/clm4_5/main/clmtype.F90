@@ -1832,6 +1832,22 @@ type, public :: column_microbe_type
 	real(r8), pointer :: ch4bud_ddif_unsat(:)		! CH4 budget diagnostic, ddif unsat
 	real(r8), pointer :: ch4bud_dlat_sat(:)		! CH4 budget diagnostic, dlat sat
 	real(r8), pointer :: ch4bud_dlat_unsat(:)		! CH4 budget diagnostic, dlat unsat
+	real(r8), pointer :: ch4bud_res_pre_sat(:) ! diagnostic only: pre-loop diffusion and lateral stock change
+	real(r8), pointer :: ch4bud_res_pre_unsat(:) ! diagnostic only: pre-loop diffusion and lateral stock change
+	real(r8), pointer :: ch4bud_res_react_sat(:) ! diagnostic only: reaction stock change minus reported production and oxidation
+	real(r8), pointer :: ch4bud_res_react_unsat(:) ! diagnostic only: reaction stock change minus reported production and oxidation
+	real(r8), pointer :: ch4bud_res_remove_sat(:) ! diagnostic only: plant and ebullition removal minus layer flux accounting
+	real(r8), pointer :: ch4bud_res_remove_unsat(:) ! diagnostic only: plant and ebullition removal minus layer flux accounting
+	real(r8), pointer :: ch4bud_res_clip_sat(:) ! diagnostic only: CH4 created by nonnegative concentration clipping
+	real(r8), pointer :: ch4bud_res_clip_unsat(:) ! diagnostic only: CH4 created by nonnegative concentration clipping
+	real(r8), pointer :: ch4bud_res_move_sat(:) ! diagnostic only: net stock change during gas move up
+	real(r8), pointer :: ch4bud_res_move_unsat(:) ! diagnostic only: net stock change during gas move up
+	real(r8), pointer :: ch4bud_res_surf_sat(:) ! diagnostic only: surface diffusion stock change plus reported diffusion
+	real(r8), pointer :: ch4bud_res_surf_unsat(:) ! diagnostic only: surface diffusion stock change plus reported diffusion
+	real(r8), pointer :: ch4bud_res_report_sat(:) ! diagnostic only: surface net flux minus layer transport and surface diffusion
+	real(r8), pointer :: ch4bud_res_report_unsat(:) ! diagnostic only: surface net flux minus layer transport and surface diffusion
+	real(r8), pointer :: ch4bud_res_other_sat(:) ! diagnostic only: remaining uninstrumented stock change
+	real(r8), pointer :: ch4bud_res_other_unsat(:) ! diagnostic only: remaining uninstrumented stock change
 	real(r8), pointer :: co2_surf_aere_unsat(:)		! CO2 plant-mediated transport at surface in the unsaturated zone (1 = sat)
 	real(r8), pointer :: co2_surf_ebul_unsat(:)		! CO2 ebulition transport at surface in the unsaturated zone (1 = sat)
 	real(r8), pointer :: co2_surf_dif_unsat(:)		! CO2 diffusion transport at surface in the unsaturated zone (1 = sat)
