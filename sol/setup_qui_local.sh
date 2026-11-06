@@ -3,8 +3,9 @@
 set -euo pipefail
 export USER=${USER:-root}
 SRC=/work/CLM_SPRUCE
-CASE=/work/cases/qui_microbe_local
-RUN=/work/runs/qui_microbe_local
+CNAME=${CNAME:-qui_microbe_local}
+CASE=/work/cases/$CNAME
+RUN=/work/runs/$CNAME
 DIN=$SRC/inputdata
 RST=/work/inputs/scratch/jmarindi/elm_work/runs/qui_ad500_restart/qui_microbe.clm2.r.0501-01-01-00000.nc
 test -f "$RST"
@@ -17,7 +18,7 @@ test ! -e "$CASE" || { echo "Case already exists: $CASE"; exit 1; }
 cd "$SRC/scripts"
 ./create_newcase -case "$CASE" -mach userdefined -compset I1850CLM45CN -res CLM_USRDAT -compiler gnu
 cd "$CASE"
-./xmlchange OS=LINUX,COMPILER=gnu,MPILIB=mpich,EXEROOT=/work/runs/qui_microbe_local/bld,GMAKE_J=4
+./xmlchange OS=LINUX,COMPILER=gnu,MPILIB=mpich,EXEROOT=$RUN/bld,GMAKE_J=4
 ./xmlchange CLM_CONFIG_OPTS="-phys clm4_5 -bgc cn -vsoilc_centbgc no-cent -microbe on"
 ./xmlchange RUNDIR="$RUN",DIN_LOC_ROOT="$DIN",CLM_USRDAT_NAME=2x1pt_PE-QFR
 ./xmlchange CLM_BLDNML_OPTS="-mask navy"
