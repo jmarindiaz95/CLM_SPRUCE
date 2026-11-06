@@ -5,9 +5,10 @@ import os
 import runpy
 import subprocess
 
-os.environ['CH4BLOCK_CASE'] = 'qui_ch4bud_task4'
+name = os.environ.get('CH4REPORT_CASE', 'qui_ch4bud_task4')
+os.environ['CH4BLOCK_CASE'] = name
 runpy.run_path('/work/CLM_SPRUCE/sol/setup_qui_ch4blocks.py', run_name='__main__')
-case = Path('/work/cases/qui_ch4bud_task4')
+case = Path('/work/cases')/name
 p = case/'user_nl_clm'
 fields = [f'CH4BUD_{k}_{p}' for k in ['SRC_LEGACY','PRE_INIT','DDIF','DLAT']
           for p in ['SAT','UNSAT']]
