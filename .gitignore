@@ -1,0 +1,3 @@
+# Downloaded runtime input; keep scientific NetCDF data out of source commits.
+/inputdata/atm/cam/chem/trop_mozart_aero/aero/aerosoldep_monthly_1850_mean_1.9x2.5_c090421.nc
+/sol/__pycache__/
