@@ -129,13 +129,16 @@ for pathway,model_name in mapping.items():
     model_flux[pathway]=v[f'CH4_SURF_{model_name}'][1:]@weights
     # Existing surface aggregation retains micfinundated from the bottom layer.
     # Save its observed difference from true area weighting without changing it.
-    fixed_099=(0.99*x[:,:,0]+0.01*x[:,:,1])@weights
+    # The original unsuffixed Fortran literal 0.99 is first rounded to real32.
+    surface_fraction=float(np.float32(0.99))
+    fixed_099=(surface_fraction*x[:,:,0]+(1-surface_fraction)*x[:,:,1])@weights
     aggregation_errors[pathway]=float(np.max(np.abs(model_flux[pathway]-fixed_099)))
 np.testing.assert_allclose(flux['NETFLUX'],flux['DIF']+flux['AERE']+flux['EBUL'],atol=1e-20,rtol=1e-12)
 np.testing.assert_allclose(model_flux['NETFLUX'],model_flux['DIF']+model_flux['AERE']+model_flux['EBUL'],atol=1e-20,rtol=1e-12)
 report['emissions_mol_m2']={k:float(x.sum()*dt) for k,x in flux.items()}
 report['model_aggregated_emissions_mol_m2']={k:float(x.sum()*dt) for k,x in model_flux.items()}
 report['model_aggregation_max_error_vs_099_mol_m2_s']=aggregation_errors
+report['existing_surface_saturated_fraction']=surface_fraction
 stock=np.stack([v[f'CH4BUD_STOCK_{p}'] for p in parts],axis=-1)/12
 all_f=v['FINUNDATED']
 stock_weighted=(stock*np.stack([all_f,1-all_f],axis=-1)).sum(axis=-1)@weights
@@ -158,7 +161,9 @@ with (root/'emissions_stocks_annual.csv').open('w',newline='') as stream:
 emission=report['emissions_mol_m2']['NETFLUX']
 report['relative_scale']={'report_fraction_of_emission':report['blocks']['REPORT']['integrated_mol_m2']/emission,
     'normalized_residual_fraction_of_emission':report['closure']['total_integrated_mol_m2']/emission,
-    'stock_gain_fraction_of_emission':report['stock_mol_m2']['change']/emission}
+    'stock_gain_fraction_of_emission':report['stock_mol_m2']['change']/emission,
+    'model_aggregation_relative_difference':report['model_aggregated_emissions_mol_m2']['NETFLUX']/emission-1,
+    'report_magnitude_over_plant_plus_ebullition':abs(report['blocks']['REPORT']['integrated_mol_m2'])/(report['emissions_mol_m2']['AERE']+report['emissions_mol_m2']['EBUL'])}
 
 # New total fields are exact aliases of existing ACE fields. The new ACETO fields
 # subtract H2 and HCH4 at the process assignment; HCH4 is identically zero here.
