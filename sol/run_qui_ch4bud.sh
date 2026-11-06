@@ -1,8 +1,10 @@
 #!/bin/bash
 # CH4 budget test: two 5-year branches from the year-500 AD restart with the CH4BUD_* history fields
 # (exe must contain them; built by build_qui_ch4bud.sh). Both finund_wt_only = .true., fix_ch4_unsat on.
-#   bud_aom0 : m_dGrowRAOMMethanotrophs = 0   (same as aom0)
-#   bud_base : default AOM (0.004)
+#   bud2_aom0      : AOM growth 0, fix_finund_repart on (default)
+#   bud2_aom0_nofr : AOM growth 0, fix_finund_repart off (original repartition), to isolate its effect
+#   bud2_base      : default AOM (0.004), fix_finund_repart on
+# (first set, Nov 5: bud_aom0 / bud_base, diagnostic only)
 # Usage: called by build_qui_ch4bud.sh
 #SBATCH --job-name=qui_bud_setup
 #SBATCH -p htc
@@ -25,15 +27,16 @@ grep -q "qui_ad500_restart" $SRCD/lnd_in && grep -q "finund_wt_only = .true." $S
 setp() { sed -i "s/^$1[[:space:]].*/$1\t$2/" $3; grep -q "^$1[[:space:]]*$2\$" $3 || { echo "ERROR: $1 not set"; exit 1; }; }
 
 for v in $(env | grep -o '^SLURM_[A-Za-z_]*'); do unset $v; done
-for T in bud_aom0 bud_base; do
+for T in bud2_aom0 bud2_aom0_nofr bud2_base; do
   D=$W/runs/qui_br_$T
   rm -rf $D; mkdir -p $D/timing/checkpoints
   find $SRCD -maxdepth 1 -type f ! -name '*.nc' ! -name '*.log*' ! -name 'rpointer.*' ! -name '*.gz' ! -name 'job*' ! -name 'cesm.log' -exec cp {} $D/ \;
   sed -i "s#$SRCD#$D#g" $D/*_modelio.nml
   setp frac_ch4aom 1.0 $D/microbepar_in
   case $T in
-    bud_aom0) setp m_dGrowRAOMMethanotrophs 0.0 $D/microbepar_in ;;
-    bud_base) setp m_dGrowRAOMMethanotrophs 0.004 $D/microbepar_in ;;
+    bud2_aom0)      setp m_dGrowRAOMMethanotrophs 0.0 $D/microbepar_in ;;
+    bud2_aom0_nofr) setp m_dGrowRAOMMethanotrophs 0.0 $D/microbepar_in; printf 'fix_finund_repart\t0\n' >> $D/microbepar_in ;;
+    bud2_base)      setp m_dGrowRAOMMethanotrophs 0.004 $D/microbepar_in ;;
   esac
   sed -i 's/^\( *stop_n *= *\).*/\15/' $D/drv_in
   grep -q "stop_n *= *5" $D/drv_in || { echo "ERROR: stop_n not set to 5 in drv_in"; exit 1; }
@@ -57,4 +60,4 @@ echo "exit code \$?" >> cesm.log
 EOF
   sbatch $D/job.sh
 done
-echo "When both finish:  cd $W/runs && zip -qr ~/qui_bud.zip qui_br_bud_aom0 qui_br_bud_base -i '*.clm2.h0.*.nc' '*cesm.log' '*drv_in' '*microbepar_in'"
+echo "When all three finish:  cd $W/runs && zip -qr ~/qui_bud2.zip qui_br_bud2_aom0 qui_br_bud2_aom0_nofr qui_br_bud2_base -i '*.clm2.h0.*.nc' '*cesm.log' '*drv_in' '*microbepar_in'"

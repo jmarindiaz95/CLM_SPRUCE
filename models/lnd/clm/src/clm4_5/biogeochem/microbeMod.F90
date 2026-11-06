@@ -2889,6 +2889,7 @@ subroutine update_finundated(lbc,ubc,num_micbioc,filter_micbioc)
 	use clm_varcon, only : secspday, istwet, istsoil, istdlak, spval, istcrop
 !
 ! !ARGUMENTS:
+	use microbevarcon, only : fix_finund_repart
 	use clm_varctl, only : use_zwt_finundation, finund_k, finund_min
 implicit none
 	integer, intent(in) :: lbc, ubc                		! column bounds
@@ -2897,6 +2898,7 @@ implicit none
 !
 ! !LOCAL VARIABLES:
 ! local pointers to implicit in scalars
+	real(r8) :: frp, frn, wka, wkb   ! fix_finund_repart: previous/new inundated fraction and mixing weights
 	real(r8), pointer :: finundated(:)     			! fractional inundated area in soil column
 	real(r8), pointer :: zwt_fin(:)     			! water table depth (m)
 	real(r8), pointer :: finundated_pre(:)     		! fractional inundated area in soil column in previous time step
@@ -2980,6 +2982,36 @@ implicit none
 	if ((ltype(l) == istsoil .or. ltype(l) == istcrop) .and. abs(finundated(c) - finundated_pre(c)) > 1.e-12_r8) then   ! no change: nothing to move (also avoids 0/0 at f = 1)
 	do j = 1,nlevsoi
 !write(iulog,*)	"before cdocs_sat", cdocs_sat(c,j), "cdocs_unsat", cdocs_unsat(c,j), "finundate", finundated(c), "finundated_pre(c)", finundated_pre(c)
+	if (fix_finund_repart) then
+	! conservative repartition: f*X_sat + (1-f)*X_unsat unchanged; the area that changes state carries
+	! the concentration of the fraction it leaves (original code scaled concentrations as if they were amounts)
+	frp = finundated_pre(c); frn = finundated(c)
+	if (frn < frp) then
+	wka = (1._r8 - frp) / (1._r8 - frn); wkb = (frp - frn) / (1._r8 - frn)
+	cdocs_unsat(c,j) = wka * cdocs_unsat(c,j) + wkb * cdocs_sat(c,j)
+	caces_unsat(c,j) = wka * caces_unsat(c,j) + wkb * caces_sat(c,j)
+	cacebios_unsat(c,j) = wka * cacebios_unsat(c,j) + wkb * cacebios_sat(c,j)
+	cco2bios_unsat(c,j) = wka * cco2bios_unsat(c,j) + wkb * cco2bios_sat(c,j)
+	caerch4bios_unsat(c,j) = wka * caerch4bios_unsat(c,j) + wkb * caerch4bios_sat(c,j)
+	canaerch4bios_unsat(c,j) = wka * canaerch4bios_unsat(c,j) + wkb * canaerch4bios_sat(c,j)
+	ccon_ch4s_unsat(c,j) = wka * ccon_ch4s_unsat(c,j) + wkb * ccon_ch4s_sat(c,j)
+	ccon_o2s_unsat(c,j) = wka * ccon_o2s_unsat(c,j) + wkb * ccon_o2s_sat(c,j)
+	ccon_co2s_unsat(c,j) = wka * ccon_co2s_unsat(c,j) + wkb * ccon_co2s_sat(c,j)
+	ccon_h2s_unsat(c,j) = wka * ccon_h2s_unsat(c,j) + wkb * ccon_h2s_sat(c,j)
+	else
+	wka = frp / frn; wkb = (frn - frp) / frn
+	cdocs_sat(c,j) = wka * cdocs_sat(c,j) + wkb * cdocs_unsat(c,j)
+	caces_sat(c,j) = wka * caces_sat(c,j) + wkb * caces_unsat(c,j)
+	cacebios_sat(c,j) = wka * cacebios_sat(c,j) + wkb * cacebios_unsat(c,j)
+	cco2bios_sat(c,j) = wka * cco2bios_sat(c,j) + wkb * cco2bios_unsat(c,j)
+	caerch4bios_sat(c,j) = wka * caerch4bios_sat(c,j) + wkb * caerch4bios_unsat(c,j)
+	canaerch4bios_sat(c,j) = wka * canaerch4bios_sat(c,j) + wkb * canaerch4bios_unsat(c,j)
+	ccon_ch4s_sat(c,j) = wka * ccon_ch4s_sat(c,j) + wkb * ccon_ch4s_unsat(c,j)
+	ccon_o2s_sat(c,j) = wka * ccon_o2s_sat(c,j) + wkb * ccon_o2s_unsat(c,j)
+	ccon_co2s_sat(c,j) = wka * ccon_co2s_sat(c,j) + wkb * ccon_co2s_unsat(c,j)
+	ccon_h2s_sat(c,j) = wka * ccon_h2s_sat(c,j) + wkb * ccon_h2s_unsat(c,j)
+	end if
+	else
 	if(finundated(c) < finundated_pre(c)) then
 	dlt 					= (finundated_pre(c) - finundated(c)) / finundated_pre(c)
 	cdocs_unsat(c,j) 		= cdocs_unsat(c,j) + cdocs_sat(c,j) * dlt
@@ -3024,6 +3056,7 @@ implicit none
 	ccon_co2s_unsat(c,j) 	= ccon_co2s_unsat(c,j) - ccon_co2s_unsat(c,j) * dlt
 	ccon_h2s_sat(c,j) 		= ccon_h2s_sat(c,j) + ccon_h2s_unsat(c,j) * dlt
 	ccon_h2s_unsat(c,j) 		= ccon_h2s_unsat(c,j) - ccon_h2s_unsat(c,j) * dlt
+	end if
 	end if
 !write(iulog,*)	"after cdocs_sat", cdocs_sat(c,j), "cdocs_unsat", cdocs_unsat(c,j), "finundate", finundated(c), "finundated_pre(c)", finundated_pre(c)
 
