@@ -121,15 +121,21 @@ report['pre_split_max_error']=float(np.max(np.abs(pre_sum-pre)))
 # Integrate instantaneous fluxes with instantaneous inundation fraction: no monthly mean products.
 flux={}
 model_flux={}
+aggregation_errors={}
 mapping={'NETFLUX':'NETFLUX','DIF':'DIFF','AERE':'AERE','EBUL':'EBUL'}
 for pathway,model_name in mapping.items():
     x=np.stack([v[f'CH4_SURF_{pathway}_{p}'][1:] for p in parts],axis=-1)
     flux[pathway]=(x*fraction).sum(axis=-1)@weights
     model_flux[pathway]=v[f'CH4_SURF_{model_name}'][1:]@weights
+    # Existing surface aggregation retains micfinundated from the bottom layer.
+    # Save its observed difference from true area weighting without changing it.
+    fixed_099=(0.99*x[:,:,0]+0.01*x[:,:,1])@weights
+    aggregation_errors[pathway]=float(np.max(np.abs(model_flux[pathway]-fixed_099)))
 np.testing.assert_allclose(flux['NETFLUX'],flux['DIF']+flux['AERE']+flux['EBUL'],atol=1e-20,rtol=1e-12)
 np.testing.assert_allclose(model_flux['NETFLUX'],model_flux['DIF']+model_flux['AERE']+model_flux['EBUL'],atol=1e-20,rtol=1e-12)
 report['emissions_mol_m2']={k:float(x.sum()*dt) for k,x in flux.items()}
 report['model_aggregated_emissions_mol_m2']={k:float(x.sum()*dt) for k,x in model_flux.items()}
+report['model_aggregation_max_error_vs_099_mol_m2_s']=aggregation_errors
 stock=np.stack([v[f'CH4BUD_STOCK_{p}'] for p in parts],axis=-1)/12
 all_f=v['FINUNDATED']
 stock_weighted=(stock*np.stack([all_f,1-all_f],axis=-1)).sum(axis=-1)@weights
