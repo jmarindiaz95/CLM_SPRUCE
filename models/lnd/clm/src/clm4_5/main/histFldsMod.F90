@@ -1722,6 +1722,12 @@ contains
     call hist_addfld1d (fname='CH4BUD_RES_UNITS_UNSAT', units='mixed', &
          avgflag='A', long_name='legacy mixed-unit residual minus unit-consistent residual; not physical CH4 creation, unsat', &
          ptr_col=cmic%ch4bud_res_units_unsat)
+    call hist_addfld1d (fname='CH4BUD_PRE_INIT_SAT', units='mol/m2/s', &
+         avgflag='A', long_name='pre-loop stock change before gas diffusion, sat', &
+         ptr_col=cmic%ch4bud_pre_init_sat)
+    call hist_addfld1d (fname='CH4BUD_PRE_INIT_UNSAT', units='mol/m2/s', &
+         avgflag='A', long_name='pre-loop stock change before gas diffusion, unsat', &
+         ptr_col=cmic%ch4bud_pre_init_unsat)
     call hist_addfld1d (fname='CH4BUD_RES_PRE_SAT', units='mol/m2/s', &
          avgflag='A', long_name='pre-loop diffusion and lateral stock change, sat', &
          ptr_col=cmic%ch4bud_res_pre_sat)

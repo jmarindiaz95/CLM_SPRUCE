@@ -4613,7 +4613,9 @@ contains
 	allocate(cmic%ch4bud_dlat_sat(beg:end))
 	allocate(cmic%ch4bud_dlat_unsat(beg:end))
 	allocate(cmic%ch4bud_res_pre_sat(beg:end))
+	allocate(cmic%ch4bud_pre_init_sat(beg:end))
 	allocate(cmic%ch4bud_res_pre_unsat(beg:end))
+	allocate(cmic%ch4bud_pre_init_unsat(beg:end))
 	allocate(cmic%ch4bud_res_react_sat(beg:end))
 	allocate(cmic%ch4bud_res_react_unsat(beg:end))
 	allocate(cmic%ch4bud_res_remove_sat(beg:end))
@@ -4848,7 +4850,9 @@ contains
 	cmic%ch4bud_dlat_sat(beg:end) = spval
 	cmic%ch4bud_dlat_unsat(beg:end) = spval
 	cmic%ch4bud_res_pre_sat(beg:end) = spval
+	cmic%ch4bud_pre_init_sat(beg:end) = spval
 	cmic%ch4bud_res_pre_unsat(beg:end) = spval
+	cmic%ch4bud_pre_init_unsat(beg:end) = spval
 	cmic%ch4bud_res_react_sat(beg:end) = spval
 	cmic%ch4bud_res_react_unsat(beg:end) = spval
 	cmic%ch4bud_res_remove_sat(beg:end) = spval

@@ -908,7 +908,14 @@ implicit none
 
 !	call seasonality(lbc, ubc, lbp, ubp, num_soilc, filter_soilc, num_soilp, filter_soilp)
 	call get_waterhead(lbc, ubc, num_soilc, filter_soilc,jwaterhead_unsat)
-	if (isotope == 'bulk') call ch4bud_stock(lbc, ubc, num_soilc, filter_soilc, bs1, bu1)
+	if (isotope == 'bulk') then
+	   call ch4bud_stock(lbc, ubc, num_soilc, filter_soilc, bs1, bu1)
+	   do fcb = 1, num_soilc
+	      cb = filter_soilc(fcb)
+	      cmic%ch4bud_pre_init_sat(cb) = (bs1(cb)-bs0(cb)/12._r8)/dt
+	      cmic%ch4bud_pre_init_unsat(cb) = (bu1(cb)-bu0(cb)/12._r8)/dt
+	   end do
+	end if
 	call gas_diffusion(lbc, ubc, num_soilc, filter_soilc,isotope)
 	if (isotope == 'bulk') call ch4bud_stock(lbc, ubc, num_soilc, filter_soilc, bs2, bu2)
 #if (defined HUM_HOL)

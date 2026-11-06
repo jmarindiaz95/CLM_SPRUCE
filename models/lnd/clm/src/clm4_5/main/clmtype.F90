@@ -1839,6 +1839,8 @@ type, public :: column_microbe_type
 	real(r8), pointer :: ch4bud_ddif_unsat(:)		! CH4 budget diagnostic, ddif unsat
 	real(r8), pointer :: ch4bud_dlat_sat(:)		! CH4 budget diagnostic, dlat sat
 	real(r8), pointer :: ch4bud_dlat_unsat(:)		! CH4 budget diagnostic, dlat unsat
+	real(r8), pointer :: ch4bud_pre_init_sat(:) ! stock change before gas_diffusion; diagnostic only
+	real(r8), pointer :: ch4bud_pre_init_unsat(:) ! stock change before gas_diffusion; diagnostic only
 	real(r8), pointer :: ch4bud_res_pre_sat(:) ! diagnostic only: pre-loop diffusion and lateral stock change
 	real(r8), pointer :: ch4bud_res_pre_unsat(:) ! diagnostic only: pre-loop diffusion and lateral stock change
 	real(r8), pointer :: ch4bud_res_react_sat(:) ! diagnostic only: reaction stock change minus reported production and oxidation
