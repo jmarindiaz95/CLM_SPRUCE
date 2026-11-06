@@ -2675,6 +2675,12 @@ end do
          micfinundated = finundated(c)
          if (finund_wt_only .and. j > jwaterhead_unsat(c)) micfinundated = 0.99
       end if
+      ! fix_micfin_agg: the bulk state (DOC is written back to decomp_cpools_vr below) and the
+      ! column surface fluxes must use the same area split as the process loop, update_finundated
+      ! and the CH4 budget: f = finundated(c) in every layer. Original: 0.99 below the water
+      ! table (and everywhere under HUM_HOL without use_zwt_finundation), and the surface fluxes
+      ! reuse the deepest layer's value.
+      if (fix_micfin_agg) micfinundated = finundated(c)
 	cdocs(c,j) 				= cdocs_unsat(c,j) * (1.0 - micfinundated) + cdocs_sat(c,j) * micfinundated
 	caces(c,j) 				= caces_unsat(c,j) * (1.0 - micfinundated)  + caces_sat(c,j) * micfinundated
 	caces_prod(c,j) 		= caces_unsat_prod(c,j) * (1.0 - micfinundated)  + caces_sat_prod(c,j) * micfinundated
@@ -2721,6 +2727,7 @@ end do
 	
       end do
       
+      if (fix_micfin_agg) micfinundated = finundated(c)
       ch4_surf_aere(c)			= ch4_surf_aere_unsat(c) * (1.0 - micfinundated) + ch4_surf_aere_sat(c) * micfinundated
       ch4_surf_ebul(c)			= ch4_surf_ebul_unsat(c) * (1.0 - micfinundated) + ch4_surf_ebul_sat(c) * micfinundated
       ch4_surf_dif(c)			= ch4_surf_dif_unsat(c) * (1.0 - micfinundated) + ch4_surf_dif_sat(c) * micfinundated
