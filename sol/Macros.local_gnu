@@ -1,0 +1,22 @@
+# Ubuntu Docker, system GNU/MPICH/NetCDF. No scientific source changes.
+CPPDEFS += -DMICROBE -DHUM_HOL -DFORTRANUNDERSCORE -DNO_R16 -DLINUX -DCPRGNU
+SLIBS += $(shell /opt/netcdf/bin/nf-config --flibs) -lblas -llapack
+CFLAGS := -O2
+FFLAGS := -O2 -fconvert=big-endian -ffree-line-length-none -ffixed-line-length-none -fallow-argument-mismatch -fallow-invalid-boz -fno-range-check
+FFLAGS_NOOPT := -O0
+FC_AUTO_R8 := -fdefault-real-8
+FIXEDFLAGS := -ffixed-form
+FREEFLAGS := -ffree-form
+MPICC := mpicc
+MPICXX := mpicxx
+MPIFC := mpif90
+SCC := gcc
+SCXX := g++
+SFC := gfortran
+CXX_LINKER := FORTRAN
+SUPPORTS_CXX := TRUE
+NETCDF_PATH := /opt/netcdf
+PNETCDF_PATH :=
+MPI_PATH :=
+MPI_LIB_NAME :=
+CONFIG_ARGS :=
