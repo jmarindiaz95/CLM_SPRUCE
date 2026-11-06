@@ -8,14 +8,15 @@ import json
 import shutil
 
 root = Path('/work')
-run = root/'runs/qui_ch4bud_blocks'
-case = root/'cases/qui_ch4bud_blocks'
+name=os.environ.get('CH4BLOCK_CASE','qui_ch4bud_blocks')
+run = root/'runs'/name
+case = root/'cases'/name
 src = root/'CLM_SPRUCE'
 out = root/'results/qui_ch4bud_blocks'
 out.mkdir()  # Never overwrite an existing result.
 exe=run/'bld/cesm.exe'
 symbols=subprocess.check_output(['strings',str(exe)],text=True)
-for name in ['CH4BUD_RES_CLIP_SAT','CH4BUD_RES_REPORT_UNSAT','fix_finund_repart']:
+for name in ['CH4BUD_RES_CLIP_SAT','CH4BUD_RES_REPORT_UNSAT','CH4BUD_NORM_RES_SAT','fix_finund_repart']:
     assert name in symbols, name
 assert (run/'microbepar_in').read_bytes()==(root/'results/qui_finund_repart/on/microbepar_in').read_bytes()
 metadata=dict(source_commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=src,text=True).strip(),
@@ -23,6 +24,7 @@ metadata=dict(source_commit=subprocess.check_output(['git','rev-parse','HEAD'],c
               restart_sha256=hashlib.sha256((root/'inputs/scratch/jmarindi/elm_work/runs/qui_ad500_restart/qui_microbe.clm2.r.0501-01-01-00000.nc').read_bytes()).hexdigest())
 (out/'provenance.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(metadata,flush=True)
+(run/'timing/checkpoints').mkdir(parents=True,exist_ok=True)
 with (run/'cesm.log').open('w') as log:
     subprocess.run(['mpiexec','-n','1',str(exe)],cwd=run,stdout=log,stderr=subprocess.STDOUT,
                    env={**os.environ,'OMP_NUM_THREADS':'1'},check=True)
