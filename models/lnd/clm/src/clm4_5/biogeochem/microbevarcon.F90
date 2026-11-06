@@ -252,6 +252,10 @@ module microbevarcon
 	logical :: fix_finund_repart = .true. ! update_finundated: area-conserving repartition of dissolved pools between fractions
 	logical :: fix_unsat_surf = .false. ! route already-removed unsaturated plant/ebullition CH4 to surface; optional trailing switch
 	logical :: fix_micfin_agg = .false. ! aggregate sat/unsat to bulk with the area fraction finundated(c) in every layer and at the surface; optional trailing switch
+	logical :: fix_lat_weights = .false. ! hummock/hollow exchanges (gas_diffusion, lateral_bgc): divide by the actual exchanging-fraction area instead of 0.75/0.25; optional trailing switch
+	! HUM_HOL hummock area weight; the hollow is 1 - lat_hum_wt. Must equal hum_frac in SoilHydrologyMod
+	! (0.64, HUM_HOL block); the two columns are separate gridcells here (col%wtgcell = 1), so no model weight exists to read.
+	real(r8), parameter :: lat_hum_wt = 0.64_r8
 	real(r8) :: m_Fick_ad = 0.75
 	  
 !
@@ -329,6 +333,7 @@ real(r8)::dummy(nummicrobepar)
           if (trim(adjustl(swname)) == 'fix_finund_repart') fix_finund_repart = (swval > 0.5_r8)
           if (trim(adjustl(swname)) == 'fix_unsat_surf') fix_unsat_surf = (swval > 0.5_r8)
           if (trim(adjustl(swname)) == 'fix_micfin_agg') fix_micfin_agg = (swval > 0.5_r8)
+          if (trim(adjustl(swname)) == 'fix_lat_weights') fix_lat_weights = (swval > 0.5_r8)
        end do
        call relavu( unitn )
 
@@ -570,6 +575,7 @@ end if
     call mpi_bcast (fix_finund_repart, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (fix_unsat_surf, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (fix_micfin_agg, 1 , MPI_LOGICAL, 0, mpicom, ierr)
+    call mpi_bcast (fix_lat_weights, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (m_Fick_ad, 1 , MPI_REAL8, 0, mpicom, ierr)
     call mpi_bcast (m_dPlantTrans, 1 , MPI_REAL8, 0, mpicom, ierr)
     
@@ -677,6 +683,7 @@ end if
 	write(iulog,*)'fix_finund_repart = ', fix_finund_repart
 	write(iulog,*)'fix_unsat_surf = ', fix_unsat_surf
 	write(iulog,*)'fix_micfin_agg = ', fix_micfin_agg
+	write(iulog,*)'fix_lat_weights = ', fix_lat_weights, ' lat_hum_wt = ', lat_hum_wt
 	
 	write(iulog,*)'m_dPlantTrans = ', m_dPlantTrans
 	

@@ -3315,6 +3315,8 @@ implicit none
 #if (defined HUM_HOL)
 	real(r8) :: hum_frac
 	real(r8) :: hol_frac
+	real(r8) :: hum_a_sat, hol_a_sat, hum_a_uns, hol_a_uns   ! exchanging areas (fix_lat_weights)
+	logical  :: lx_sat_on, lx_uns_on
 
 	real(r8) :: lxch4unsat
 	real(r8) :: lxch4sat
@@ -3434,9 +3436,21 @@ implicit none
 #if (defined HUM_HOL)
         hum_frac = 0.75
 	hol_frac = 0.25
+	hum_a_sat = hum_frac; hol_a_sat = hol_frac; hum_a_uns = hum_frac; hol_a_uns = hol_frac
+	lx_sat_on = .true.; lx_uns_on = .true.
+	if (fix_lat_weights) then
+	   ! fix_lat_weights: the exchange moves lx per unit grid area between the sat (or unsat) fractions of the
+	   ! hummock (area lat_hum_wt*f1) and hollow ((1-lat_hum_wt)*f2); upstream divided by 0.75/0.25.
+	   hum_a_sat = lat_hum_wt * finundated(1)
+	   hol_a_sat = (1._r8 - lat_hum_wt) * finundated(2)
+	   hum_a_uns = lat_hum_wt * (1._r8 - finundated(1))
+	   hol_a_uns = (1._r8 - lat_hum_wt) * (1._r8 - finundated(2))
+	   lx_sat_on = (min(hum_a_sat, hol_a_sat) >= 1.e-6_r8)
+	   lx_uns_on = (min(hum_a_uns, hol_a_uns) >= 1.e-6_r8)
+	end if
 
 	do j = 1,nlevsoi
-	if(j < nlevsoi) then
+	if(j < nlevsoi .and. lx_uns_on) then
 !write(iulog, *) "LBGC debug 1", lxch4unsat, ccon_ch4s_unsat(1,j), ccon_ch4s_unsat(2,j),  Fick_D_w(1), t_soisno(c,j), get_step_size()
 		lxch4unsat = (ccon_ch4s_unsat(1,j) - ccon_ch4s_unsat(2,j)) * Fick_D_w(1) * m_Fick_ad * 1.0e-4 * (t_soisno(c,j) / 298)**1.87 * get_step_size() !CH4_dif
 !write(iulog, *) "LBGC debug 2", lxch4unsat, ccon_ch4s_unsat(1,j), ccon_ch4s_unsat(2,j),  Fick_D_w(1), t_soisno(c,j), get_step_size()
@@ -3446,36 +3460,38 @@ implicit none
 		lxh2unsat = (ccon_h2s_unsat(1,j) - ccon_h2s_unsat(2,j)) * Fick_D_w(4) * m_Fick_ad * 1.0e-4 * (t_soisno(c,j) / 298)**1.87 * get_step_size() !H2_dif
 		
 !write(iulog, *) "LBGC debug 3",ccon_ch4s_unsat(1,j),ccon_ch4s_unsat(2,j)
-		ccon_ch4s_unsat(1,j) = (ccon_ch4s_unsat(1,j) * hum_frac - lxch4unsat) / hum_frac
-		ccon_ch4s_unsat(2,j) = (ccon_ch4s_unsat(2,j) * hol_frac + lxch4unsat) / hol_frac
+		ccon_ch4s_unsat(1,j) = (ccon_ch4s_unsat(1,j) * hum_a_uns - lxch4unsat) / hum_a_uns
+		ccon_ch4s_unsat(2,j) = (ccon_ch4s_unsat(2,j) * hol_a_uns + lxch4unsat) / hol_a_uns
 !write(iulog, *) "LBGC debug 4",ccon_ch4s_unsat(1,j),ccon_ch4s_unsat(2,j)
 
-		ccon_o2s_unsat(1,j) = (ccon_o2s_unsat(1,j) * hum_frac - lxo2unsat) / hum_frac
-		ccon_o2s_unsat(2,j) = (ccon_o2s_unsat(2,j) * hol_frac + lxo2unsat) / hol_frac
+		ccon_o2s_unsat(1,j) = (ccon_o2s_unsat(1,j) * hum_a_uns - lxo2unsat) / hum_a_uns
+		ccon_o2s_unsat(2,j) = (ccon_o2s_unsat(2,j) * hol_a_uns + lxo2unsat) / hol_a_uns
 
-		ccon_co2s_unsat(1,j) = (ccon_co2s_unsat(1,j) * hum_frac - lxco2unsat) / hum_frac
-		ccon_co2s_unsat(2,j) = (ccon_co2s_unsat(2,j) * hol_frac + lxco2unsat) / hol_frac
+		ccon_co2s_unsat(1,j) = (ccon_co2s_unsat(1,j) * hum_a_uns - lxco2unsat) / hum_a_uns
+		ccon_co2s_unsat(2,j) = (ccon_co2s_unsat(2,j) * hol_a_uns + lxco2unsat) / hol_a_uns
 
-		ccon_h2s_unsat(1,j) = (ccon_h2s_unsat(1,j) * hum_frac - lxh2unsat) / hum_frac
-		ccon_h2s_unsat(2,j) = (ccon_h2s_unsat(2,j) * hol_frac + lxh2unsat) / hol_frac
+		ccon_h2s_unsat(1,j) = (ccon_h2s_unsat(1,j) * hum_a_uns - lxh2unsat) / hum_a_uns
+		ccon_h2s_unsat(2,j) = (ccon_h2s_unsat(2,j) * hol_a_uns + lxh2unsat) / hol_a_uns
 
 	end if
+	if (lx_sat_on) then
 		lxch4sat = (ccon_ch4s_sat(1,j) - ccon_ch4s_sat(2,j)) * Fick_D_w(1) * m_Fick_ad * 1.0e-4 * (t_soisno(c,j) / 298)**1.87 * get_step_size() !CH4_dif
 		lxo2sat = (ccon_o2s_sat(1,j) - ccon_o2s_sat(2,j)) * Fick_D_w(2) * m_Fick_ad * 1.0e-4 * (t_soisno(c,j) / 298)**1.87 * get_step_size() !O2_dif
 		lxco2sat = (ccon_co2s_sat(1,j) - ccon_co2s_sat(2,j)) * Fick_D_w(3) * m_Fick_ad * 1.0e-4 *  (t_soisno(c,j) / 298)**1.87 * get_step_size() !CO2_dif
 		lxh2sat = (ccon_h2s_sat(1,j) - ccon_h2s_sat(2,j)) * Fick_D_w(4) * m_Fick_ad * 1.0e-4 * (t_soisno(c,j) / 298)**1.87 * get_step_size() !H2_dif
 		
-		ccon_ch4s_sat(1,j) = (ccon_ch4s_sat(1,j) * hum_frac - lxch4sat) / hum_frac
-		ccon_ch4s_sat(2,j) = (ccon_ch4s_sat(2,j) * hol_frac + lxch4sat) / hol_frac
+		ccon_ch4s_sat(1,j) = (ccon_ch4s_sat(1,j) * hum_a_sat - lxch4sat) / hum_a_sat
+		ccon_ch4s_sat(2,j) = (ccon_ch4s_sat(2,j) * hol_a_sat + lxch4sat) / hol_a_sat
 
-		ccon_o2s_sat(1,j) = (ccon_o2s_sat(1,j) * hum_frac - lxo2sat) / hum_frac
-		ccon_o2s_sat(2,j) = (ccon_o2s_sat(2,j) * hol_frac + lxo2sat) / hol_frac
+		ccon_o2s_sat(1,j) = (ccon_o2s_sat(1,j) * hum_a_sat - lxo2sat) / hum_a_sat
+		ccon_o2s_sat(2,j) = (ccon_o2s_sat(2,j) * hol_a_sat + lxo2sat) / hol_a_sat
 
-		ccon_co2s_sat(1,j) = (ccon_co2s_sat(1,j) * hum_frac - lxco2sat) / hum_frac
-		ccon_co2s_sat(2,j) = (ccon_co2s_sat(2,j) * hol_frac + lxco2sat) / hol_frac
+		ccon_co2s_sat(1,j) = (ccon_co2s_sat(1,j) * hum_a_sat - lxco2sat) / hum_a_sat
+		ccon_co2s_sat(2,j) = (ccon_co2s_sat(2,j) * hol_a_sat + lxco2sat) / hol_a_sat
 
-		ccon_h2s_sat(1,j) = (ccon_h2s_sat(1,j) * hum_frac - lxh2sat) / hum_frac
-		ccon_h2s_sat(2,j) = (ccon_h2s_sat(2,j) * hol_frac + lxh2sat) / hol_frac
+		ccon_h2s_sat(1,j) = (ccon_h2s_sat(1,j) * hum_a_sat - lxh2sat) / hum_a_sat
+		ccon_h2s_sat(2,j) = (ccon_h2s_sat(2,j) * hol_a_sat + lxh2sat) / hol_a_sat
+	end if
 	end do
 
 #endif
@@ -3521,6 +3537,10 @@ implicit none
 	real(r8) :: hol_frac
 	real(r8) :: lat_flux_factor1
 	real(r8) :: lat_flux_factor2
+	real(r8) :: hum_a, hol_a, lff1_fix, lff2_fix   ! fix_lat_weights: sat-fraction areas and base factors
+	logical  :: lat_on
+	integer  :: jl
+	real(r8) :: tksum
 	integer :: hu_soil_id(1:20)
 	real(r8) :: hu_soil_tk(1:20)
 	real(r8) :: hu_soil_top(1:20)
@@ -3767,6 +3787,30 @@ implicit none
 	hol_frac = 0.25_r8
 	lat_flux_factor1 		= (hol_frac/hum_frac)
 	lat_flux_factor2 		= (hum_frac/hol_frac)
+	lat_on = .true.
+	if (fix_lat_weights) then
+	   ! Upstream moves lx*sqrt(hum_frac*hol_frac) per unit grid area and divides it by 0.75 / 0.25.
+	   ! Keep that amount; divide by the actual saturated-fraction areas lat_hum_wt*f1 and (1-lat_hum_wt)*f2.
+	   ! The hollow side is also scaled by hu_soil_tk/ho_soil_tk, the thickness ratio of the paired
+	   ! sublayers (1 except the deepest pair, 1.206 m vs 1.506 m), so the amount leaving equals the amount arriving.
+	   ! The sublayer thicknesses above are default-real literals; rescale them so each model layer's
+	   ! sublayers sum exactly to dz, otherwise the 20/14 -> 10 remap scales the aggregated layers by
+	   ! sum(tk)/dz (up to 3e-8) every step.
+	   do jl = 1, 10
+	      tksum = sum(hu_soil_tk, mask = (hu_soil_id == jl))
+	      where (hu_soil_id == jl) hu_soil_tk = hu_soil_tk * dz(1,jl) / tksum
+	      tksum = sum(ho_soil_tk, mask = (ho_soil_id == jl))
+	      where (ho_soil_id == jl) ho_soil_tk = ho_soil_tk * dz(2,jl) / tksum
+	   end do
+	   hum_a = lat_hum_wt * cws%finundated(1)
+	   hol_a = (1._r8 - lat_hum_wt) * cws%finundated(2)
+	   lat_on = (min(hum_a, hol_a) >= 1.e-6_r8)
+	   if (lat_on) then
+	      lff1_fix = hum_frac * hol_frac / hum_a**2
+	      lff2_fix = hum_frac * hol_frac / hol_a**2
+	      lat_flux_factor1 = lff1_fix
+	   end if
+	end if
 	
 !write(iulog,*) "herebefore hummock 10", cdocs_sat(1,1), cdocs_sat(1,2), cdocs_sat(1,3), cdocs_sat(1,4), cdocs_sat(1,5), cdocs_sat(1,6), cdocs_sat(1,7), cdocs_sat(1,8), cdocs_sat(1,9), cdocs_sat(1,10)
 !write(iulog,*) "herebefore hollow 10", cdocs_sat(2,1), cdocs_sat(2,2), cdocs_sat(2,3), cdocs_sat(2,4), cdocs_sat(2,5), cdocs_sat(2,6), cdocs_sat(2,7), cdocs_sat(2,8), cdocs_sat(2,9), cdocs_sat(2,10)
@@ -3856,6 +3900,10 @@ end do
 !~ if(jwt(c) >= nlevsoi) then
 !~ else
 	do j = 1, 14
+		if (fix_lat_weights) then
+		   if (.not. lat_on) cycle
+		   lat_flux_factor2 = lff2_fix * (hu_soil_tk(j+6) / ho_soil_tk(j))**2
+		end if
 		if(abs(qflx_lat_layer1(j+6))> 0) then
 		lxdocsat = cdocs_sat_spruce1(j+6) * qflx_lat_layer1(j+6)/hu_h2o(j+6)/1E3	! mm/s for one time step in qflx_lat_layer to consistent with m
 	if(lxdocsat > 0 .and. abs(lxdocsat) > (cdocs_sat_spruce1(j+6) / sqrt(lat_flux_factor1))) then
@@ -3940,6 +3988,10 @@ end do
 
 ! lateral diffusion
 do j = 1, 14
+		if (fix_lat_weights) then
+		   if (.not. lat_on) cycle
+		   lat_flux_factor2 = lff2_fix * (hu_soil_tk(j+6) / ho_soil_tk(j))**2
+		end if
 		lxdocsat 			= (cdocs_sat_spruce1(j+6) - cdocs_sat_spruce2(j)) * dom_diffus * get_step_size()
 		lxdonsat 			= (cdons_sat_spruce1(j+6) - cdons_sat_spruce2(j)) * dom_diffus * get_step_size()
 		lxacesat 			= (caces_sat_spruce1(j+6) - caces_sat_spruce2(j)) * dom_diffus * get_step_size()
