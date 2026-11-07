@@ -166,6 +166,7 @@ subroutine CStateUpdate1(num_soilc, filter_soilc, num_soilp, filter_soilp, isoto
    real(r8), pointer :: livestemc_xfer_to_livestemc(:)
    real(r8), pointer :: excess_cflux_to_cpool(:)
    real(r8), pointer :: cpool_to_turnover(:)
+   real(r8), pointer :: cpool_to_exud(:)       ! root exudation flux (gC/m2/s)
    real(r8), pointer :: cpool_to_xsmrpool(:)
    real(r8), pointer :: cpool_to_deadcrootc(:)
    real(r8), pointer :: cpool_to_deadcrootc_storage(:)
@@ -338,6 +339,7 @@ subroutine CStateUpdate1(num_soilc, filter_soilc, num_soilp, filter_soilp, isoto
     ivt                            =>pft%itype
     excess_cflux_to_cpool          => pcisof%excess_cflux_to_cpool
     cpool_to_turnover              => pcisof%cpool_to_turnover
+    cpool_to_exud                  => pcisof%cpool_to_exud
     cpool_deadcroot_gr             => pcisof%cpool_deadcroot_gr
     cpool_deadcroot_storage_gr     => pcisof%cpool_deadcroot_storage_gr
     cpool_deadstem_gr              => pcisof%cpool_deadstem_gr
@@ -461,6 +463,16 @@ subroutine CStateUpdate1(num_soilc, filter_soilc, num_soilp, filter_soilp, isoto
           decomp_cpools_sourcesink(c,j,i_cwd) = ( dwt_livecrootc_to_cwdc(c,j) + dwt_deadcrootc_to_cwdc(c,j) ) *dt
        end do
     end do
+
+    ! root exudation (root_exud_frac): pft flux to its own column's metabolic litter along froot_prof
+    do fp = 1,num_soilp
+       p = filter_soilp(fp)
+       c = pft%column(p)
+       do j = 1,nlevdecomp
+          decomp_cpools_sourcesink(c,j,i_met_lit) = decomp_cpools_sourcesink(c,j,i_met_lit) + &
+               cpool_to_exud(p) * pft%wtcol(p) * froot_prof(p,j) * dt
+       end do
+    end do
     
 #ifdef CPOOLMOD
     !fraction of turnover from cpool goes into labile soil carbon along froot profile
@@ -551,6 +563,7 @@ subroutine CStateUpdate1(num_soilc, filter_soilc, num_soilp, filter_soilp, isoto
  
        ! maintenance respiration fluxes from cpool
        cpool(p) = cpool(p) - cpool_to_xsmrpool(p)*dt
+       cpool(p) = cpool(p) - cpool_to_exud(p)*dt         ! root exudation (root_exud_frac)
        cpool(p) = cpool(p) - leaf_curmr(p)*dt
        cpool(p) = cpool(p) - froot_curmr(p)*dt
        if (woody(ivt(p)) == 1._r8) then

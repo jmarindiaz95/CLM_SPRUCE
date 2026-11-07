@@ -954,6 +954,7 @@ type, public :: pft_cflux_type
    real(r8), pointer :: excess_cflux_to_cpool(:)             ! downregulation flux goes to short-term storage
    real(r8), pointer :: cpool_to_turnover(:)                 ! turnover of short-term storage     
    real(r8), pointer :: cpool_to_xsmrpool(:)                 ! allocation to maintenance respiration storage pool (gC/m2/s)
+   real(r8), pointer :: cpool_to_exud(:)                     ! root exudation of recent photosynthate to metabolic litter along froot_prof (gC/m2/s); microbepar_in root_exud_frac
    real(r8), pointer :: cpool_to_grainc(:)                   ! allocation to grain C for prognostic crop(gC/m2/s)
    real(r8), pointer :: cpool_to_grainc_storage(:)           ! allocation to grain C storage for prognostic crop(gC/m2/s)
    real(r8), pointer :: cpool_to_leafc(:)                    ! allocation to leaf C (gC/m2/s)

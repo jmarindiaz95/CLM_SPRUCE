@@ -2330,6 +2330,7 @@ contains
     allocate(pcf%excess_cflux_to_cpool(beg:end))
     allocate(pcf%cpool_to_turnover(beg:end))
     allocate(pcf%cpool_to_xsmrpool(beg:end))
+    allocate(pcf%cpool_to_exud(beg:end))
     allocate(pcf%cpool_to_leafc(beg:end))
     allocate(pcf%cpool_to_leafc_storage(beg:end))
     allocate(pcf%cpool_to_frootc(beg:end))
@@ -2556,6 +2557,7 @@ contains
     pcf%excess_cflux_to_cpool(beg:end) = nan
     pcf%cpool_to_turnover(beg:end) = nan
     pcf%cpool_to_xsmrpool(beg:end) = nan
+    pcf%cpool_to_exud(beg:end) = 0._r8
     pcf%cpool_to_leafc(beg:end) = nan
     pcf%cpool_to_leafc_storage(beg:end) = nan
     pcf%cpool_to_frootc(beg:end) = nan

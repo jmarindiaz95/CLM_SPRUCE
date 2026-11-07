@@ -684,6 +684,7 @@ subroutine CNSetPcf(num, filter, val, pcf)
       pcf%psnsun_to_cpool(i) = val
       pcf%psnshade_to_cpool(i) = val
       pcf%cpool_to_xsmrpool(i) = val
+      pcf%cpool_to_exud(i) = val
       pcf%cpool_to_leafc(i) = val
       pcf%cpool_to_leafc_storage(i) = val
       pcf%cpool_to_frootc(i) = val

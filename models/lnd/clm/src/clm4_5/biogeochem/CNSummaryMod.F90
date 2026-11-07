@@ -850,6 +850,8 @@ real(r8), pointer :: mic_fch4_col(:)
 
       ! net primary production (NPP)
       npp(p) = gpp(p) - ar(p)
+      ! root exudation (root_exud_frac) leaves the plant without being respired
+      if (isotope == 'bulk') npp(p) = npp(p) - pcf%cpool_to_exud(p)
 #ifdef CPOOLMOD
       npp(p) = npp(p) - exudate_frac(ivt(p)) * cpool_to_turnover(p)
 #endif

@@ -160,6 +160,9 @@ subroutine CNAllocation (lbp, ubp, lbc, ubc, &
    use clm_varcon, only: secspday, istsoil, istcrop
    use clm_varpar, only: max_pft_per_col
    use clm_time_manager , only : get_step_size
+#if (defined MICROBE)
+   use microbevarcon, only : root_exud_frac
+#endif
 !
 ! !ARGUMENTS:
    implicit none
@@ -281,6 +284,7 @@ subroutine CNAllocation (lbp, ubp, lbc, ubc, &
    real(r8), pointer :: c14_psnshade_to_cpool(:)
    real(r8), pointer :: cpool(:)
    real(r8), pointer :: cpool_to_turnover(:)
+   real(r8), pointer :: cpool_to_exud(:)          ! root exudation flux (gC/m2/s)
    real(r8), pointer :: cpool_to_leafc(:)
    real(r8), pointer :: cpool_to_leafc_storage(:)
    real(r8), pointer :: cpool_to_frootc(:)
@@ -485,6 +489,7 @@ subroutine CNAllocation (lbp, ubp, lbc, ubc, &
    downreg                     => pepv%downreg
    annsum_npp                  => pepv%annsum_npp
    cpool_to_xsmrpool           => pcf%cpool_to_xsmrpool
+   cpool_to_exud               => pcf%cpool_to_exud
    psnsun_to_cpool             => pcf%psnsun_to_cpool
    psnshade_to_cpool           => pcf%psnshade_to_cpool
    cpool_to_leafc              => pcf%cpool_to_leafc
@@ -627,6 +632,17 @@ subroutine CNAllocation (lbp, ubp, lbc, ubc, &
       
       ! no allocation when available c is negative
       availc(p) = max(availc(p),0.0_r8)
+
+      ! root_exud_frac (microbepar_in, default 0 = off): a fraction of current GPP is exuded by roots
+      ! before xsmrpool recovery and allocation, limited to the C available after maintenance respiration;
+      ! it goes to metabolic litter along froot_prof (CNCStateUpdate1), as in the upstream CPOOLMOD exudate path.
+      cpool_to_exud(p) = 0._r8
+#if (defined MICROBE)
+      if (root_exud_frac > 0._r8) then
+         cpool_to_exud(p) = min(root_exud_frac * gpp(p), availc(p))
+         availc(p) = availc(p) - cpool_to_exud(p)
+      end if
+#endif
 
       ! test for an xsmrpool deficit
       if (xsmrpool(p) < 0.0_r8) then

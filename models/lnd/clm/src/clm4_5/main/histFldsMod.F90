@@ -6726,6 +6726,10 @@ end if
          avgflag='A', long_name='C flux assigned to recovery of negative xsmrpool', &
          ptr_pft=pepv%xsmrpool_recover)
 
+    call hist_addfld1d (fname='ROOT_EXUDC', units='gC/m^2/s', &
+         avgflag='A', long_name='root exudation to metabolic litter (root_exud_frac)', &
+         ptr_pft=pcf%cpool_to_exud)
+
     if ( use_c13 ) then
        call hist_addfld1d (fname='XSMRPOOL_C13RATIO', units='proportion', &
             avgflag='A', long_name='C13/C(12+13) ratio for xsmrpool', &
