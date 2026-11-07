@@ -1,0 +1,28 @@
+ fsurdat = '@DIN@/lnd/clm2/surfdata_map/surfdata_2x1pt_PE-QFR.nc'
+ fpftcon = '@DIN@/lnd/clm2/paramdata/clm_params_qui.nc'
+ finidat = '@FINIDAT@'
+ stream_fldfilename_ndep = '@DIN@/lnd/clm2/ndepdata/fndep_clm_hist_simyr1849-2006_2x1pt_PE-QFR.nc'
+ stream_fldfilename_popdens = '@DIN@/lnd/clm2/firedata/clmforc.Li_2012_hdm_1x1pt_PE-QFR_AVHRR_simyr1850-2010_c130401.nc'
+ stream_fldfilename_lightng = '@DIN@/atm/datm7/NASA_LIS/clmforc.Li_2012_climo1995-2011.1x1pt_PE-QFR.lnfm_c130327.nc'
+ stream_year_first_ndep = 1849
+ stream_year_last_ndep = 2006
+ model_year_align_ndep = 1849
+ use_c13 = .false.
+ use_c14 = .false.
+ spinup_state = 0
+ use_vg_retention = .true.
+ use_zwt_finundation = .true.
+ finund_wt_only = .true.
+ finund_k = 219.4
+ finund_min = 0.45
+ use_seasonal_leafcn = .true.
+ gapmort_off_year = 9999
+ hist_empty_htapes = .true.
+ hist_dov2xy = .false., .false.
+ hist_nhtfrq = 0, 1
+ hist_mfilt = 12, 17520
+ hist_avgflag_pertape = 'A', 'I'
+ hist_fincl1 = 'GPP', 'HR', 'NEE', 'ER', 'TOTSOMC', 'ZWT', 'FINUNDATED', 'H2OSFC', 'CBAL_ERR', 'NBAL_ERR',
+ 'CH4_SURF_NETFLUX', 'CH4_SURF_DIFF', 'CH4_SURF_AERE', 'CH4_SURF_EBUL', 'CH4_PROD_TOT_DEPTH', 'CDOCS'
+ hist_fincl2 = 'CH4_SURF_NETFLUX', 'CH4_SURF_DIFF', 'CH4_SURF_AERE', 'CH4_SURF_EBUL', 'FINUNDATED',
+ 'CH4BUD_NORM_RES_SAT', 'CH4BUD_NORM_RES_UNSAT', 'CH4BUD_STOCK_SAT', 'CH4BUD_STOCK_UNSAT'
