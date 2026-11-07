@@ -405,6 +405,7 @@ implicit none
 #endif
 
 	real(r8) :: nppratio(lbc:ubc)
+	real(r8) :: col_rr_now(lbc:ubc)            ! fix_nppratio: column root respiration from this step's pft fluxes (gC/m2/s)
 	
 	real(r8) :: roothr_vr(lbc:ubc,1:nlevdecomp)
 	real(r8) :: rootfraction(lbc:ubc,1:nlevdecomp)
@@ -854,11 +855,29 @@ implicit none
 	roothr_vr(:,:) = 0._r8
 	rootfraction(:,:)=0.0_r8
 	if (fix_co2_dt) froot_r(:,:) = 0._r8   ! original code never reset this accumulator
+	if (fix_nppratio) then
+	   ! col_rr (pcf_a%rr) is zeroed by CNZeroFluxes before this routine and filled by CSummary after it,
+	   ! so nppratio sat at its floor 1e-9*1e6/cannsum_npp. Build the column root respiration here with
+	   ! CSummary's definition; all terms are computed earlier in this step (CNMResp, CNGResp).
+	   col_rr_now(:) = 0._r8
+	   do fp = 1, num_soilp
+	      p = filter_soilp(fp)
+	      c = pcolumn(p)
+	      col_rr_now(c) = col_rr_now(c) + wtcol(p) * ( pcf%froot_mr(p) + &
+	         pcf%cpool_froot_gr(p) + pcf%cpool_livecroot_gr(p) + pcf%cpool_deadcroot_gr(p) + &
+	         pcf%transfer_froot_gr(p) + pcf%transfer_livecroot_gr(p) + pcf%transfer_deadcroot_gr(p) + &
+	         pcf%cpool_froot_storage_gr(p) + pcf%cpool_livecroot_storage_gr(p) + pcf%cpool_deadcroot_storage_gr(p) )
+	   end do
+	end if
 	do fp = 1, num_soilc
 		c = filter_soilc(fp)
 		roothr_vr(c,:) = 0.0_r8
 		rootfraction(c,:)=0.0_r8
+		if (fix_nppratio) then
+		nppratio(c) = max(1e-9,col_rr_now(c)) * 1e+6 / max(cannsum_npp(c), 0.01)
+		else
 		nppratio(c) = max(1e-9,col_rr(c)) * 1e+6 / max(cannsum_npp(c), 0.01)
+		end if
 !write(iulog, *) nppratio(c)," nppratio", col_npp(c), cannsum_npp(c)
 		nppratio(c) = min(1.0, nppratio(c))
 	end do
