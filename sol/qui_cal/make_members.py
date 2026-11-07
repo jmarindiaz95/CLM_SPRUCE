@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Create calibration members from the built template run directory (runs/qui_cal_tmpl): Latin hypercube over the
+"""Create calibration members (ranges: pilot | revised) from the built template run directory (runs/qui_cal_tmpl): Latin hypercube over the
 parameters below, per-member microbepar_in, lnd_in (finund_k, finund_min, fpftcon -> member copy with k_dom) and
-namelists; writes design.csv and a Slurm array script.  Usage: make_members.py <set> <n> <seed>"""
+namelists; writes design.csv and a Slurm array script.  Usage: make_members.py <set> <n> <seed> [pilot|revised]"""
 import csv, re, shutil, sys
 from pathlib import Path
 import numpy as np
@@ -19,11 +19,19 @@ PARAMS = [('m_dAceProdACmax', 'microbe', 2e-8, 2e-6, True), ('m_dKAce', 'microbe
           ('k_dom', 'kdom', 0.006, 0.0375, False), ('finund_k', 'lnd', 100., 400., False),
           ('finund_min', 'lnd', 0.3, 0.6, False)]
 
+# Main-ensemble ranges (approved 2026-11-07 after the pilot): oxidation half-saturation extended above Yuan's 1.5,
+# water-coverage floor below Yuan's 0.45, production and CH4 threshold narrowed.
+REVISED = {'m_dKCH4OxidCH4': (0.1, 3.0, True), 'finund_min': (0.10, 0.45, False),
+           'm_dAceProdACmax': (5e-8, 1e-6, True), 'm_dCH4min': (0.01, 0.1, True)}
+
 def lhs(n, k, rng):
     u = (np.argsort(rng.random((n, k)), axis=0) + rng.random((n, k))) / n
     return u
 
-def main(setname, n, seed):
+def main(setname, n, seed, ranges='pilot'):
+    global PARAMS
+    if ranges == 'revised':
+        PARAMS = [(pn, kind) + REVISED.get(pn, (lo, hi, lg)) for pn, kind, lo, hi, lg in PARAMS]
     out = W/'qui_cal'/setname
     out.mkdir(parents=True)
     assert EXE.exists() and (TMPL/'lnd_in').exists() and (TMPL/'datm.global1val.streams.co2.txt').exists()
@@ -82,4 +90,4 @@ srun -n 1 {EXE} > cesm.log 2>&1
     print(f'{n} members in {out}; submit: sbatch {out}/run_array.sh')
 
 if __name__ == '__main__':
-    main(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]))
+    main(sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), sys.argv[4] if len(sys.argv) > 4 else 'pilot')
