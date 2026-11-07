@@ -3113,7 +3113,7 @@ subroutine update_finundated(lbc,ubc,num_micbioc,filter_micbioc)
 	use clm_varcon, only : secspday, istwet, istsoil, istdlak, spval, istcrop
 !
 ! !ARGUMENTS:
-	use microbevarcon, only : fix_finund_repart, fix_finund_ponded
+	use microbevarcon, only : fix_finund_repart, fix_finund_ponded, fix_finund_hum_datum, humhol_ht_fin
 	use clm_varctl, only : use_zwt_finundation, finund_k, finund_min
 implicit none
 	integer, intent(in) :: lbc, ubc                		! column bounds
@@ -3125,6 +3125,7 @@ implicit none
 	real(r8) :: frp, frn, wka, wkb   ! fix_finund_repart: previous/new inundated fraction and mixing weights
 	real(r8), pointer :: finundated(:)     			! fractional inundated area in soil column
 	real(r8), pointer :: zwt_fin(:)     			! water table depth (m)
+	real(r8) :: zwt_eff                             ! water table depth used by the scalar (m)
 	real(r8), pointer :: finundated_pre(:)     		! fractional inundated area in soil column in previous time step
 	
 	real(r8), pointer :: cdocs_unsat(:,:)                   	! column-level dissolved organic carbon in unsatured fraction
@@ -3196,7 +3197,13 @@ implicit none
         c = filter_micbioc(fc)
 	if (use_zwt_finundation) then
 	   ! Yuan et al. 2023 (SI Eq. 2): water coverage scalar from water table depth (m), floor finund_min, cap 1
-	   finundated(c) = min(1._r8, exp(-finund_k * max(zwt_fin(c), 0._r8)) + finund_min)
+	   zwt_eff = zwt_fin(c)
+#if (defined HUM_HOL)
+	   ! fix_finund_hum_datum: Yuan's site-level scalar is fitted to the water level relative to the ground;
+	   ! the hummock (column 1) surface stands humhol_ht_fin above the hollow ground (SoilHydrologyMod).
+	   if (fix_finund_hum_datum .and. c == 1) zwt_eff = zwt_fin(c) - humhol_ht_fin
+#endif
+	   finundated(c) = min(1._r8, exp(-finund_k * max(zwt_eff, 0._r8)) + finund_min)
 	   ! fix_finund_ponded: Yuan's scalar limits only where the surface is not covered by water
 	   if (fix_finund_ponded) finundated(c) = max(finundated(c), min(1._r8, max(0._r8, cps%frac_h2osfc(c))))
 	end if
