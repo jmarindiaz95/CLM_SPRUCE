@@ -3,13 +3,13 @@
 Reads WTD_GAPFILLED_m (m, positive above the surface) from the PE-QFR forcing source CSV, averages to daily means
 (2018-2019) and writes 'year doy level_m' for each model year in [y0, y1]. Model year Y uses forcing year
 2018 + mod(Y - 1980, 2), the DATM alignment of the QUI cases (streams 1980 2018 2019, taxmode cycle).
-Usage: python make_obswl.py <forcing_csv.gz> <out.txt> [y0 y1]
+Usage: python make_obswl.py <forcing_csv.gz> <out.txt> [y0 y1]   (y1 must include the year after the last run year)
 """
 import csv, gzip, sys
 from collections import defaultdict
 
 src, out = sys.argv[1], sys.argv[2]
-y0, y1 = (int(sys.argv[3]), int(sys.argv[4])) if len(sys.argv) > 4 else (2015, 2019)
+y0, y1 = (int(sys.argv[3]), int(sys.argv[4])) if len(sys.argv) > 4 else (2015, 2020)   # the last time step of a 2015-2019 run is dated Y+1-01-01
 cum = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334]
 acc = defaultdict(list)
 for r in csv.DictReader(gzip.open(src, 'rt')):
