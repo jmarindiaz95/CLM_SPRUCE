@@ -1,0 +1,52 @@
+ fsurdat = '@DIN@/lnd/clm2/surfdata_map/surfdata_2x1pt_PE-QFR.nc'
+ fpftcon = '@DIN@/lnd/clm2/paramdata/clm_params_qui.nc'
+ finidat = '@FINIDAT@'
+ stream_fldfilename_ndep = '@DIN@/lnd/clm2/ndepdata/fndep_clm_hist_simyr1849-2006_2x1pt_PE-QFR.nc'
+ stream_fldfilename_popdens = '@DIN@/lnd/clm2/firedata/clmforc.Li_2012_hdm_1x1pt_PE-QFR_AVHRR_simyr1850-2010_c130401.nc'
+ stream_fldfilename_lightng = '@DIN@/atm/datm7/NASA_LIS/clmforc.Li_2012_climo1995-2011.1x1pt_PE-QFR.lnfm_c130327.nc'
+ use_c13 = .false.
+ use_c14 = .false.
+ spinup_state = 1
+ use_vg_retention = .true.
+ use_zwt_finundation = .true.
+ finund_wt_only = .true.
+ use_seasonal_leafcn = .true.
+ gapmort_off_year = 9999
+ hist_dov2xy = .false., .false.
+ hist_nhtfrq = 0, 1
+ hist_mfilt = 12, 17520
+ hist_ndens = 1, 1
+ hist_avgflag_pertape = 'A', 'I'
+ hist_fincl2 = 'FINUNDATED', 'CH4BUD_STOCK_SAT', 'CH4BUD_STOCK_UNSAT',
+ 'CH4BUD_RESX_SAT', 'CH4BUD_RESX_UNSAT', 'CH4BUD_RES_SAT', 'CH4BUD_RES_UNSAT',
+ 'CH4BUD_SRC_SAT', 'CH4BUD_SRC_UNSAT',
+ 'CH4BUD_RES_PRE_SAT', 'CH4BUD_RES_PRE_UNSAT',
+ 'CH4BUD_RES_REACT_SAT', 'CH4BUD_RES_REACT_UNSAT',
+ 'CH4BUD_RES_REMOVE_SAT', 'CH4BUD_RES_REMOVE_UNSAT',
+ 'CH4BUD_RES_CLIP_SAT', 'CH4BUD_RES_CLIP_UNSAT',
+ 'CH4BUD_RES_MOVE_SAT', 'CH4BUD_RES_MOVE_UNSAT',
+ 'CH4BUD_RES_SURF_SAT', 'CH4BUD_RES_SURF_UNSAT',
+ 'CH4BUD_RES_REPORT_SAT', 'CH4BUD_RES_REPORT_UNSAT',
+ 'CH4BUD_RES_OTHER_SAT', 'CH4BUD_RES_OTHER_UNSAT',
+ 'CH4BUD_NORM_RES_SAT', 'CH4BUD_NORM_RES_UNSAT', 'CH4BUD_RES_UNITS_SAT', 'CH4BUD_RES_UNITS_UNSAT',
+ 'CH4BUD_SRC_LEGACY_SAT',
+ 'CH4BUD_SRC_LEGACY_UNSAT',
+ 'CH4BUD_PRE_INIT_SAT',
+ 'CH4BUD_PRE_INIT_UNSAT',
+ 'CH4BUD_DDIF_SAT',
+ 'CH4BUD_DDIF_UNSAT',
+ 'CH4BUD_DLAT_SAT',
+ 'CH4BUD_DLAT_UNSAT',
+ 'CH4_SURF_NETFLUX_SAT',
+ 'CH4_SURF_NETFLUX_UNSAT',
+ 'CH4_SURF_DIF_SAT',
+ 'CH4_SURF_DIF_UNSAT',
+ 'CH4_SURF_AERE_SAT',
+ 'CH4_SURF_AERE_UNSAT',
+ 'CH4_SURF_EBUL_SAT',
+ 'CH4_SURF_EBUL_UNSAT',
+ 'CH4_SURF_NETFLUX',
+ 'CH4_SURF_DIFF',
+ 'CH4_SURF_AERE',
+ 'CH4_SURF_EBUL',
+ 'CH4_AERE_DEPTH_UNSAT', 'CH4_EBUL_DEPTH_UNSAT'
