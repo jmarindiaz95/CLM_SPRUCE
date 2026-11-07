@@ -12,7 +12,7 @@ def variant_params(params):
         for sw in SWITCHES[2:]:
             assert re.search(rb'^' + sw.encode() + rb'\s+1\s*$', params, re.M), sw
         assert not re.search(rb'^fix_nppratio\s', params, re.M)
-        extra = {'fix': b'', 'npp': b'\nfix_nppratio\t1', 'yuan': b'\nfix_nppratio\t1\nfix_finund_ponded\t1\nfix_finund_rates\t1'}[VARIANT]
+        extra = {'fix': b'', 'npp': b'\nfix_nppratio\t1', 'yuan': b'\nfix_nppratio\t1\nfix_finund_ponded\t1\nfix_finund_rates\t1\nfix_finund_hum_datum\t1'}[VARIANT]
         return params if VARIANT == 'fix' else params.rstrip(b'\n') + extra + b'\n'
     for sw in SWITCHES:
         params, n = re.subn(rb'^' + sw.encode() + rb'\s+1\s*$', sw.encode() + b'\t0', params, flags=re.M)
