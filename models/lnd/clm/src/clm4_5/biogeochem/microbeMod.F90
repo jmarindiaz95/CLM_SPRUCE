@@ -3103,7 +3103,7 @@ subroutine update_finundated(lbc,ubc,num_micbioc,filter_micbioc)
 	use clm_varcon, only : secspday, istwet, istsoil, istdlak, spval, istcrop
 !
 ! !ARGUMENTS:
-	use microbevarcon, only : fix_finund_repart
+	use microbevarcon, only : fix_finund_repart, fix_finund_ponded
 	use clm_varctl, only : use_zwt_finundation, finund_k, finund_min
 implicit none
 	integer, intent(in) :: lbc, ubc                		! column bounds
@@ -3187,6 +3187,8 @@ implicit none
 	if (use_zwt_finundation) then
 	   ! Yuan et al. 2023 (SI Eq. 2): water coverage scalar from water table depth (m), floor finund_min, cap 1
 	   finundated(c) = min(1._r8, exp(-finund_k * max(zwt_fin(c), 0._r8)) + finund_min)
+	   ! fix_finund_ponded: Yuan's scalar limits only where the surface is not covered by water
+	   if (fix_finund_ponded) finundated(c) = max(finundated(c), min(1._r8, max(0._r8, cps%frac_h2osfc(c))))
 	end if
 	if(finundated_pre(c) > 1.0) then
 	finundated_pre(c) = finundated(c)
