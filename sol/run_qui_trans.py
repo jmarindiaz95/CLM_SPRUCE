@@ -4,7 +4,7 @@ from pathlib import Path
 import hashlib, json, re, shutil, subprocess, os
 
 root = Path('/work')
-V = {'fix': '', 'pub': '_pub', 'npp': '_npp'}[os.environ.get('QUI_VARIANT', 'fix')]
+V = {'fix': '', 'pub': '_pub', 'npp': '_npp', 'yuan': '_yuan'}[os.environ.get('QUI_VARIANT', 'fix')]
 src = root/'CLM_SPRUCE'
 case = root/f'cases/qui_trans{V}'
 run = root/f'runs/qui_trans{V}'
@@ -35,7 +35,9 @@ assert any('SUCCESSFUL TERMINATION' in p.read_text(errors='replace') for p in ru
 lnd = ''.join(p.read_text(errors='replace') for p in run.glob('lnd.log.*'))
 for sw in ['fix_ch4_unsat', 'fix_finund_repart', 'fix_unsat_surf', 'fix_micfin_agg', 'fix_lat_weights']:
     assert re.search(sw + r'\s*=\s*' + ('F' if V == '_pub' else 'T'), lnd), sw
-assert re.search(r'fix_nppratio\s*=\s*' + ('T' if V == '_npp' else 'F'), lnd)
+assert re.search(r'fix_nppratio\s*=\s*' + ('T' if V in ('_npp', '_yuan') else 'F'), lnd)
+for sw in ['fix_finund_ponded', 'fix_finund_rates']:
+    assert re.search(sw + r'\s*=\s*' + ('T' if V == '_yuan' else 'F'), lnd), sw
 for p in run.iterdir():
     keep_h1 = '.h1.' in p.name and p.name.split('.h1.')[1][:4] in ('2018', '2019')
     if p.is_file() and ('.h0.' in p.name or keep_h1 or '.log' in p.name or p.name.endswith('_in')

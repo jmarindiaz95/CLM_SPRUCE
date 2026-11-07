@@ -8,22 +8,23 @@ import os, re, runpy, subprocess
 VARIANT = os.environ.get('QUI_VARIANT', 'fix')        # 'fix': accepted switches on; 'pub': all fix switches 0 (published code)
 SWITCHES = ['fix_dom_n', 'fix_co2_dt', 'fix_ch4_unsat', 'fix_finund_repart', 'fix_unsat_surf', 'fix_micfin_agg', 'fix_lat_weights']
 def variant_params(params):
-    if VARIANT in ('fix', 'npp'):
+    if VARIANT in ('fix', 'npp', 'yuan'):
         for sw in SWITCHES[2:]:
             assert re.search(rb'^' + sw.encode() + rb'\s+1\s*$', params, re.M), sw
         assert not re.search(rb'^fix_nppratio\s', params, re.M)
-        return params if VARIANT == 'fix' else params.rstrip(b'\n') + b'\nfix_nppratio\t1\n'
+        extra = {'fix': b'', 'npp': b'\nfix_nppratio\t1', 'yuan': b'\nfix_nppratio\t1\nfix_finund_ponded\t1\nfix_finund_rates\t1'}[VARIANT]
+        return params if VARIANT == 'fix' else params.rstrip(b'\n') + extra + b'\n'
     for sw in SWITCHES:
         params, n = re.subn(rb'^' + sw.encode() + rb'\s+1\s*$', sw.encode() + b'\t0', params, flags=re.M)
         assert n == 1, sw
     return params
-name = 'qui_final50' + {'fix': '', 'pub': '_pub', 'npp': '_npp'}[VARIANT]
+name = 'qui_final50' + {'fix': '', 'pub': '_pub', 'npp': '_npp', 'yuan': '_yuan'}[VARIANT]
 os.environ['CH4REPORT_CASE'] = name
 runpy.run_path('/work/CLM_SPRUCE/sol/setup_qui_task4.py', run_name='__main__')
 case = Path('/work/cases')/name
 p = case/'user_nl_clm'
 t = p.read_text().rstrip()+",\n 'CH4_AERE_DEPTH_UNSAT', 'CH4_EBUL_DEPTH_UNSAT'\n"
-fin = '/work/runs/qui_ref20/qui_ref20.clm2.r.0021-01-01-00000.nc' if VARIANT in ('fix', 'npp') else '/work/inputs/scratch/jmarindi/elm_work/runs/qui_ad500_restart/qui_microbe.clm2.r.0501-01-01-00000.nc'
+fin = '/work/runs/qui_ref20/qui_ref20.clm2.r.0021-01-01-00000.nc' if VARIANT in ('fix', 'npp', 'yuan') else '/work/inputs/scratch/jmarindi/elm_work/runs/qui_ad500_restart/qui_microbe.clm2.r.0501-01-01-00000.nc'
 assert Path(fin).exists()
 t, n1 = re.subn(r"^ finidat = .*$", f" finidat = '{fin}'", t, flags=re.M)
 t, n2 = re.subn(r"^ spinup_state = 1$", " spinup_state = 0", t, flags=re.M)
