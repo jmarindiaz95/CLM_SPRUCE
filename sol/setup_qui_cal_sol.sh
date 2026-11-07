@@ -12,7 +12,7 @@ NCDF=/scratch/jmarindi/clm_work/netcdf_merged_oneapi
 export LD_LIBRARY_PATH=$NCDF/lib:$LD_LIBRARY_PATH
 W=/scratch/jmarindi/elm_work
 SRC=$W/CLM_SPRUCE
-CNAME=qui_cal_tmpl
+CNAME=${CNAME:-qui_cal_tmpl}   # override for a separate build (e.g. CNAME=qui_cal_obswl)
 CASE=$W/cases/$CNAME
 BLD=$W/builds/$CNAME
 RUN=$W/runs/$CNAME
@@ -94,7 +94,7 @@ module load intel-oneapi-compilers-2022.1.0-gcc-11.2.0 intel-oneapi-mpi-2021.10.
 export LD_LIBRARY_PATH=$NCDF/lib:\$LD_LIBRARY_PATH
 export I_MPI_CC=icc I_MPI_CXX=icpc I_MPI_FC=ifort I_MPI_F90=ifort I_MPI_F77=ifort
 cd $CASE
-if ./$CNAME.build > build_out.txt 2>&1 && grep -q SUCCESSFULLY build_out.txt && strings $BLD/cesm.exe | grep -q fix_finund_hum_datum; then
+if ./$CNAME.build > build_out.txt 2>&1 && grep -q SUCCESSFULLY build_out.txt && strings $BLD/cesm.exe | grep -q ${STRCHK:-fix_finund_hum_datum}; then
   cp $CASE/datm.global1val.streams.co2.txt $RUN/
   echo "== BUILD OK \$(date)"
 else
