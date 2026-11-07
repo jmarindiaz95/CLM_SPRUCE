@@ -257,6 +257,7 @@ module microbevarcon
 	! (0.64, HUM_HOL block); the two columns are separate gridcells here (col%wtgcell = 1), so no model weight exists to read.
 	real(r8), parameter :: lat_hum_wt = 0.64_r8
 	logical :: fix_finund_ponded = .false. ! water-coverage scalar f = max(Yuan Eq. 2, frac_h2osfc): no limitation where the surface is ponded; optional trailing switch
+	logical :: fix_finund_rates = .false. ! Yuan et al. (2023) limiter: unsaturated-fraction acetate production, CH4 production, CH4 oxidation, plant transport and ebullition scaled by f; optional trailing switch
 	logical :: fix_nppratio = .false. ! nppratio (scales plant transport and ebullition) from this step's root respiration; the column average it read is zeroed by CNZeroFluxes before microbech4 and filled by CSummary after it; optional trailing switch
 	real(r8) :: m_Fick_ad = 0.75
 	  
@@ -338,6 +339,7 @@ real(r8)::dummy(nummicrobepar)
           if (trim(adjustl(swname)) == 'fix_lat_weights') fix_lat_weights = (swval > 0.5_r8)
           if (trim(adjustl(swname)) == 'fix_nppratio') fix_nppratio = (swval > 0.5_r8)
           if (trim(adjustl(swname)) == 'fix_finund_ponded') fix_finund_ponded = (swval > 0.5_r8)
+          if (trim(adjustl(swname)) == 'fix_finund_rates') fix_finund_rates = (swval > 0.5_r8)
        end do
        call relavu( unitn )
 
@@ -582,6 +584,7 @@ end if
     call mpi_bcast (fix_lat_weights, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (fix_nppratio, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (fix_finund_ponded, 1 , MPI_LOGICAL, 0, mpicom, ierr)
+    call mpi_bcast (fix_finund_rates, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (m_Fick_ad, 1 , MPI_REAL8, 0, mpicom, ierr)
     call mpi_bcast (m_dPlantTrans, 1 , MPI_REAL8, 0, mpicom, ierr)
     
@@ -692,6 +695,7 @@ end if
 	write(iulog,*)'fix_lat_weights = ', fix_lat_weights, ' lat_hum_wt = ', lat_hum_wt
 	write(iulog,*)'fix_nppratio = ', fix_nppratio
 	write(iulog,*)'fix_finund_ponded = ', fix_finund_ponded
+	write(iulog,*)'fix_finund_rates = ', fix_finund_rates
 	
 	write(iulog,*)'m_dPlantTrans = ', m_dPlantTrans
 	

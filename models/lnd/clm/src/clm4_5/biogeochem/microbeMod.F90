@@ -1104,6 +1104,7 @@ if(j >= jwaterhead_unsat(c)) then
 	AceProd = ACConcentration * 2.0 / 3.0 / dt
 	ACCO2Prod = 0.5 * AceProd
 	end if
+	if (fix_finund_rates) AceProd = AceProd * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
 	
 !	caces_unsat_prod(c,j) = AceProd
 
@@ -1156,6 +1157,8 @@ if(j >= jwaterhead_unsat(c)) then
 !write(iulog,*) "ccon_h2s(c,j): ",	ccon_h2s(c,j)	 
 	ACConcentration = ACConcentration - (3.0 / 2.0 * AceProd * dt)
 	
+	if (fix_finund_rates) H2AceProd = H2AceProd * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
+	if (fix_finund_rates) H2CH4Prod = H2CH4Prod * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
 	H2Cons = 4. * (H2AceProd + H2CH4Prod)
 
 	H2Cons = max(0._r8, H2Cons)
@@ -1202,6 +1205,7 @@ if(j >= jwaterhead_unsat(c)) then
 	else
 	AceCons = caces_unsat(c,j) / dt
 	end if
+	if (fix_finund_rates) AceCons = AceCons * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
 
 	caces_unsat(c,j) = caces_unsat(c,j) - AceCons * dt
 
@@ -1238,6 +1242,7 @@ if(j >= jwaterhead_unsat(c)) then
 	if(CH4Oxid < 0) then
 	CH4Oxid = 0
 	end if
+	if (fix_finund_rates) CH4Oxid = CH4Oxid * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
 
 	
 !write(iulog,*) "CH4PlantFlux: ", m_dPlantTrans, " ", rootfr_vr(c,j), ccon_ch4s_unsat(c,j), m_dCH4min !, tempavg_bgnpp(c), annavg_bgnpp(c)
@@ -1257,6 +1262,8 @@ if(j >= jwaterhead_unsat(c)) then
 	else
 	CH4Ebull = min(CH4Ebull, ccon_ch4s_unsat(c,j) / 2.0)
 	end if
+	if (fix_finund_rates) CH4PlantFlux = CH4PlantFlux * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
+	if (fix_finund_rates) CH4Ebull = CH4Ebull * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
 			
 	!	// For O2 dyndamics
 	AerO2Cons = m_drAer * ACCO2Prod
@@ -1480,6 +1487,7 @@ else
 	else	
 	AceProd = ACConcentration * 2.0 / 3.0 / dt
 	end if
+	if (fix_finund_rates) AceProd = AceProd * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
 	
 !	caces_unsat_prod(c,j) = AceProd
 
@@ -1558,6 +1566,7 @@ else
 	else
 	AceCons = (caces_unsat(c,j) - OxidAce2CO2 * dt) / dt
 	end if
+	if (fix_finund_rates) AceCons = AceCons * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
 
 	caces_unsat(c,j) = caces_unsat(c,j) - (AceCons + OxidAce2CO2) * dt
 	caces_unsat(c,j) = max(0._r8 ,caces_unsat(c,j))
@@ -1588,6 +1597,7 @@ else
 	end if
 
 	CH4Oxid = max(0._r8 ,CH4Oxid)
+	if (fix_finund_rates) CH4Oxid = CH4Oxid * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
 
 	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = ccon_ch4s_unsat(c,j) - CH4Oxid * dt
