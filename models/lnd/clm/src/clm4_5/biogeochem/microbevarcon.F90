@@ -260,6 +260,9 @@ module microbevarcon
 	logical :: fix_finund_rates = .false. ! Yuan et al. (2023) limiter: unsaturated-fraction acetate production, CH4 production, CH4 oxidation, plant transport and ebullition scaled by f; optional trailing switch
 	logical :: fix_finund_hum_datum = .false. ! HUM_HOL: hummock water table referenced to the hollow ground (zwt - humhol_ht_fin) in the water-coverage scalar; optional trailing switch
 	real(r8), parameter :: humhol_ht_fin = 0.15_r8 ! hummock height above the hollow; must equal humhol_ht in SoilHydrologyMod (HUM_HOL blocks)
+	logical :: fix_finund_obswl = .false. ! water-coverage scalar from a prescribed daily observed water level (./finund_obswl.txt: year doy level_m, positive above the ground) instead of the model water table; same level for all columns; optional trailing switch
+	integer, parameter :: obswl_y0 = 1850, obswl_y1 = 2100   ! year range of the observed-level table
+	real(r8) :: obswl_m(365, obswl_y0:obswl_y1) = -9999._r8  ! observed water level (m above ground) by day of year (noleap) and model year
 	logical :: fix_nppratio = .false. ! nppratio (scales plant transport and ebullition) from this step's root respiration; the column average it read is zeroed by CNZeroFluxes before microbech4 and filled by CSummary after it; optional trailing switch
 	real(r8) :: m_Fick_ad = 0.75
 	  
@@ -343,8 +346,29 @@ real(r8)::dummy(nummicrobepar)
           if (trim(adjustl(swname)) == 'fix_finund_ponded') fix_finund_ponded = (swval > 0.5_r8)
           if (trim(adjustl(swname)) == 'fix_finund_rates') fix_finund_rates = (swval > 0.5_r8)
           if (trim(adjustl(swname)) == 'fix_finund_hum_datum') fix_finund_hum_datum = (swval > 0.5_r8)
+          if (trim(adjustl(swname)) == 'fix_finund_obswl') fix_finund_obswl = (swval > 0.5_r8)
        end do
        call relavu( unitn )
+
+       ! fix_finund_obswl: daily observed water level table
+       if (fix_finund_obswl) then
+          unitn = getavu()
+          call opnfil('./finund_obswl.txt', unitn, 'f')
+          n = 0
+          do
+             read(unitn, *, IOSTAT=ierr) i, j, swval
+             if (ierr /= 0) exit
+             if (i < obswl_y0 .or. i > obswl_y1 .or. j < 1 .or. j > 365) then
+                write(iulog,*) 'finund_obswl.txt: year or day of year out of range: ', i, j
+                call endrun()
+             end if
+             obswl_m(j, i) = swval
+             n = n + 1
+          end do
+          call relavu( unitn )
+          write(iulog,*) 'fix_finund_obswl: read ', n, ' daily observed water levels from ./finund_obswl.txt'
+          if (n == 0) call endrun()
+       end if
 
 ! Guard against a microbepar_in whose line order does not match the read order below
 ! (the CLM_SPRUCE file had 3 obsolete lines that shifted dom_diffus, m_Fick_ad, m_dPlantTrans).
@@ -589,6 +613,8 @@ end if
     call mpi_bcast (fix_finund_ponded, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (fix_finund_rates, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (fix_finund_hum_datum, 1 , MPI_LOGICAL, 0, mpicom, ierr)
+    call mpi_bcast (fix_finund_obswl, 1 , MPI_LOGICAL, 0, mpicom, ierr)
+    call mpi_bcast (obswl_m, size(obswl_m) , MPI_REAL8, 0, mpicom, ierr)
     call mpi_bcast (m_Fick_ad, 1 , MPI_REAL8, 0, mpicom, ierr)
     call mpi_bcast (m_dPlantTrans, 1 , MPI_REAL8, 0, mpicom, ierr)
     
@@ -701,6 +727,7 @@ end if
 	write(iulog,*)'fix_finund_ponded = ', fix_finund_ponded
 	write(iulog,*)'fix_finund_rates = ', fix_finund_rates
 	write(iulog,*)'fix_finund_hum_datum = ', fix_finund_hum_datum, ' humhol_ht_fin = ', humhol_ht_fin
+	write(iulog,*)'fix_finund_obswl = ', fix_finund_obswl
 	
 	write(iulog,*)'m_dPlantTrans = ', m_dPlantTrans
 	

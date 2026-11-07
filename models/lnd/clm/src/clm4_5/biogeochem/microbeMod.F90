@@ -3114,6 +3114,8 @@ subroutine update_finundated(lbc,ubc,num_micbioc,filter_micbioc)
 !
 ! !ARGUMENTS:
 	use microbevarcon, only : fix_finund_repart, fix_finund_ponded, fix_finund_hum_datum, humhol_ht_fin
+	use microbevarcon, only : fix_finund_obswl, obswl_m, obswl_y0, obswl_y1
+	use clm_time_manager, only: get_curr_date
 	use clm_varctl, only : use_zwt_finundation, finund_k, finund_min
 implicit none
 	integer, intent(in) :: lbc, ubc                		! column bounds
@@ -3126,6 +3128,8 @@ implicit none
 	real(r8), pointer :: finundated(:)     			! fractional inundated area in soil column
 	real(r8), pointer :: zwt_fin(:)     			! water table depth (m)
 	real(r8) :: zwt_eff                             ! water table depth used by the scalar (m)
+	integer :: yr_ow, mon_ow, day_ow, tod_ow, doy_ow    ! fix_finund_obswl: current date
+	integer, parameter :: cumd_ow(12) = (/0,31,59,90,120,151,181,212,243,273,304,334/)
 	real(r8), pointer :: finundated_pre(:)     		! fractional inundated area in soil column in previous time step
 	
 	real(r8), pointer :: cdocs_unsat(:,:)                   	! column-level dissolved organic carbon in unsatured fraction
@@ -3203,9 +3207,24 @@ implicit none
 	   ! the hummock (column 1) surface stands humhol_ht_fin above the hollow ground (SoilHydrologyMod).
 	   if (fix_finund_hum_datum .and. c == 1) zwt_eff = zwt_fin(c) - humhol_ht_fin
 #endif
+	   ! fix_finund_obswl: scalar from the prescribed daily observed level (m above ground; depth = -level),
+	   ! the same for all columns (the site level is referenced to the ground); model ponding is not used
+	   if (fix_finund_obswl) then
+	      call get_curr_date(yr_ow, mon_ow, day_ow, tod_ow)
+	      doy_ow = cumd_ow(mon_ow) + day_ow
+	      if (yr_ow < obswl_y0 .or. yr_ow > obswl_y1 .or. doy_ow > 365) then
+	         write(iulog,*) 'fix_finund_obswl: date outside the table: ', yr_ow, doy_ow
+	         call endrun()
+	      end if
+	      if (obswl_m(doy_ow, yr_ow) < -9000._r8) then
+	         write(iulog,*) 'fix_finund_obswl: no observed water level for ', yr_ow, doy_ow
+	         call endrun()
+	      end if
+	      zwt_eff = -obswl_m(doy_ow, yr_ow)
+	   end if
 	   finundated(c) = min(1._r8, exp(-finund_k * max(zwt_eff, 0._r8)) + finund_min)
 	   ! fix_finund_ponded: Yuan's scalar limits only where the surface is not covered by water
-	   if (fix_finund_ponded) finundated(c) = max(finundated(c), min(1._r8, max(0._r8, cps%frac_h2osfc(c))))
+	   if (fix_finund_ponded .and. .not. fix_finund_obswl) finundated(c) = max(finundated(c), min(1._r8, max(0._r8, cps%frac_h2osfc(c))))
 	end if
 	if(finundated_pre(c) > 1.0) then
 	finundated_pre(c) = finundated(c)
