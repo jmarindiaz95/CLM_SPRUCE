@@ -26,6 +26,10 @@ for M in "$@"; do
          -e "s#^ fpftcon = .*# fpftcon = '$D/clm_params_member.nc'#" $D/lnd_in
   sed -i -e "s#^ start_ymd = .*# start_ymd = 20200101#" -e "s#^ stop_n = .*# stop_n = 3#" \
          -e "s#^ restart_n = .*# restart_n = 3#" $D/drv_in
+  # logs into the validation directory (the copied *_modelio.nml point diro at the calibration member), timing dir
+  sed -i -e "s#^ diro = .*# diro = '$D'#" $D/*_modelio.nml
+  mkdir -p $D/timing/checkpoints
+  grep -h "diro" $D/*_modelio.nml | sort -u | grep -qv "'$D'" && { echo "ERROR: diro not rewritten"; exit 1; }
   sed -i "s#datm.streams.txt.CLM1PT.CLM_USRDAT 1980 2018 2019#datm.streams.txt.CLM1PT.CLM_USRDAT 2020 2020 2022#" $D/datm_atm_in
   # forcing stream: new directory, files 2020-01 .. 2022-12
   python3 - $D/datm.streams.txt.CLM1PT.CLM_USRDAT $FORC <<'EOF'
