@@ -4619,6 +4619,8 @@ contains
 	allocate(cmic%ch4bud_res_pre_unsat(beg:end))
 	allocate(cmic%ch4bud_pre_init_unsat(beg:end))
 	allocate(cmic%ch4bud_res_react_sat(beg:end))
+	allocate(cmic%ea_sat(beg:end,1:nlevgrnd))
+	allocate(cmic%ace_ea_flux(beg:end))
 	allocate(cmic%ch4bud_res_react_unsat(beg:end))
 	allocate(cmic%ch4bud_res_remove_sat(beg:end))
 	allocate(cmic%ch4bud_res_remove_unsat(beg:end))
@@ -4856,6 +4858,8 @@ contains
 	cmic%ch4bud_res_pre_unsat(beg:end) = spval
 	cmic%ch4bud_pre_init_unsat(beg:end) = spval
 	cmic%ch4bud_res_react_sat(beg:end) = spval
+	cmic%ea_sat(beg:end,1:nlevgrnd) = 0._r8   ! fully reduced at a start without EA_SAT in the initial file
+	cmic%ace_ea_flux(beg:end) = 0._r8
 	cmic%ch4bud_res_react_unsat(beg:end) = spval
 	cmic%ch4bud_res_remove_sat(beg:end) = spval
 	cmic%ch4bud_res_remove_unsat(beg:end) = spval

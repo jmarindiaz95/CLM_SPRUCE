@@ -434,6 +434,7 @@ implicit none
 	real(r8) :: CO2PlantFlux = 0.				! CO2 transport through plant
 	real(r8) :: AOMCH4Oxid = 0.				! Anaerobic oxidation of methane 
 	real(r8) :: AceCons = 0.					! Acetate acid consumption
+	real(r8) :: AceEA, wk_ea					! ea_cap: acetate oxidation by alternative electron acceptors (molC/m3/s), scaling
 	real(r8) :: H2CO2Cons = 0.				! H2 production CO2
 	real(r8) :: AceMethanogenGrowth = 0.		! growing rate of aceclastic methanogen
 	real(r8) :: AceMethanogenDying = 0.		! death rate of aceclastic methanogen
@@ -2083,6 +2084,22 @@ end if  ! end if of the frozen mechanism in trapping gases in soil
 	AceCons = caces_sat(c,j) / dt
 	end if
 
+	! ea_cap: acceptor reducers (pool regenerated during drawdown, update_finundated) take acetate in competition
+	! with acetoclastic methanogens, ea_kfac x their uptake when the pool is full, and oxidize it to CO2
+	if (ea_cap > 0._r8 .and. isotope == 'bulk') then
+	   AceEA = ea_kfac * AceCons * max(0._r8, cmic%ea_sat(c,j)) / ea_cap
+	   AceEA = min(AceEA, max(0._r8, cmic%ea_sat(c,j)) / dt)
+	   if ((AceCons + AceEA) * dt > caces_sat(c,j) .and. AceCons + AceEA > 0._r8) then
+	      wk_ea = caces_sat(c,j) / ((AceCons + AceEA) * dt)
+	      AceCons = AceCons * wk_ea
+	      AceEA = AceEA * wk_ea
+	   end if
+	   caces_sat(c,j) = caces_sat(c,j) - AceEA * dt
+	   cmic%ea_sat(c,j) = cmic%ea_sat(c,j) - AceEA * dt
+	   ccon_co2s_sat(c,j) = ccon_co2s_sat(c,j) + AceEA * dt
+	   cmic%ace_ea_flux(c) = cmic%ace_ea_flux(c) + AceEA * dz(c,j) * finundated(c)
+	end if
+
 	caces_sat(c,j) = caces_sat(c,j) - AceCons * dt
 
 	if(caces_sat(c,j) < 0) then
@@ -3148,6 +3165,7 @@ subroutine update_finundated(lbc,ubc,num_micbioc,filter_micbioc)
 ! !ARGUMENTS:
 	use microbevarcon, only : fix_finund_repart, fix_finund_ponded, fix_finund_hum_datum, humhol_ht_fin
 	use microbevarcon, only : fix_finund_obswl, obswl_m, obswl_y0, obswl_y1, finund_rec_tau
+	use microbevarcon, only : ea_cap, ea_regen_tau
 	use clm_time_manager, only: get_curr_date
 	use clm_varctl, only : use_zwt_finundation, finund_k, finund_min
 implicit none
@@ -3198,6 +3216,7 @@ implicit none
 	integer :: fc        ! soil column filter indices
 	real(r8) :: dlt
 	real(r8) :: wrec                                ! finund_rec_tau: relaxation weight per step
+	real(r8) :: wea                                 ! ea_cap: regeneration weight per step
 !EOP
 !-----------------------------------------------------------------------
 ! assign local pointers to derived type arrays
@@ -3236,6 +3255,7 @@ implicit none
 	   end if
 	   wrec = 1._r8 - exp(-get_step_size() / (finund_rec_tau * secspday))
 	end if
+	if (ea_cap > 0._r8) wea = 1._r8 - exp(-get_step_size() / (ea_regen_tau * secspday))
 
 	do fc = 1,num_micbioc
         c = filter_micbioc(fc)
@@ -3362,6 +3382,13 @@ implicit none
 	   else
 	      fin_rate(c) = fin_rate(c) + (finundated(c) - fin_rate(c)) * wrec
 	   end if
+	end if
+	! ea_cap: acceptors re-oxidize toward ea_cap on the exposed fraction (1 - f); reset the step's acetate-oxidation sum
+	if (ea_cap > 0._r8) then
+	   cmic%ace_ea_flux(c) = 0._r8
+	   do j = 1, nlevsoi
+	      cmic%ea_sat(c,j) = cmic%ea_sat(c,j) + (ea_cap - cmic%ea_sat(c,j)) * (1._r8 - finundated(c)) * wea
+	   end do
 	end if
 	end do
 

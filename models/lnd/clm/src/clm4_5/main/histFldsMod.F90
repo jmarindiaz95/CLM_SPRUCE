@@ -1669,6 +1669,12 @@ contains
     call hist_addfld2d (fname='CACES_SAT', units='molC/m3', type2d='levgrnd', &
          avgflag='A', long_name='available acetic acid in saturated fraction', &
          ptr_col=cmic%caces_sat) 
+    call hist_addfld2d (fname='EA_SAT', units='molC/m3', type2d='levgrnd', &
+         avgflag='A', long_name='alternative electron acceptor pool, acetate-C equivalent (ea_cap)', &
+         ptr_col=cmic%ea_sat, default='inactive')
+    call hist_addfld1d (fname='ACE_EA_FLUX', units='molC/m2/s', &
+         avgflag='A', long_name='acetate oxidized to CO2 by alternative electron acceptors (ea_cap), area-weighted', &
+         ptr_col=cmic%ace_ea_flux, default='inactive')
 
 
     call hist_addfld1d (fname='CH4_SURF_AERE', units='mol/m2/s',  &

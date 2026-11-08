@@ -498,6 +498,17 @@ contains
           if (is_restart()) call endrun()
        end if
     end if
+
+    ! ea_cap: alternative electron acceptor pool; absent from older files -> stays at its initial 0 (fully reduced)
+    if (flag == 'define') then
+       call ncd_defvar(ncid=ncid, varname='EA_SAT', xtype=ncd_double, &
+            dim1name='column', dim2name='levgrnd', switchdim=.true., &
+            long_name='alternative electron acceptor pool, acetate-C equivalent (ea_cap)', units='molC/m^3')
+    else if (flag == 'read' .or. flag == 'write') then
+       call ncd_io(varname='EA_SAT', data=cmic%ea_sat, &
+            dim1name='column', switchdim=.true., &
+            ncid=ncid, flag=flag, readvar=readvar)
+    end if
     
     ! column microbial state variable - cacebios
     if (flag == 'define') then

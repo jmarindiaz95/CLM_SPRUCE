@@ -1844,6 +1844,8 @@ type, public :: column_microbe_type
 	real(r8), pointer :: ch4bud_pre_init_unsat(:) ! stock change before gas_diffusion; diagnostic only
 	real(r8), pointer :: ch4bud_res_pre_sat(:) ! diagnostic only: pre-loop diffusion and lateral stock change
 	real(r8), pointer :: ch4bud_res_pre_unsat(:) ! diagnostic only: pre-loop diffusion and lateral stock change
+	real(r8), pointer :: ea_sat(:,:)     ! ea_cap: alternative electron acceptor pool, acetate-C equivalent (molC/m3), regenerated during drawdown
+	real(r8), pointer :: ace_ea_flux(:)  ! ea_cap: acetate oxidized to CO2 by alternative electron acceptors, column, area-weighted (molC/m2/s)
 	real(r8), pointer :: ch4bud_res_react_sat(:) ! diagnostic only: reaction stock change minus reported production and oxidation
 	real(r8), pointer :: ch4bud_res_react_unsat(:) ! diagnostic only: reaction stock change minus reported production and oxidation
 	real(r8), pointer :: ch4bud_res_remove_sat(:) ! diagnostic only: plant and ebullition removal minus layer flux accounting

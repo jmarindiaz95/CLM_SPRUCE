@@ -261,6 +261,9 @@ module microbevarcon
 	logical :: fix_finund_hum_datum = .false. ! HUM_HOL: hummock water table referenced to the hollow ground (zwt - humhol_ht_fin) in the water-coverage scalar; optional trailing switch
 	real(r8), parameter :: humhol_ht_fin = 0.15_r8 ! hummock height above the hollow; must equal humhol_ht in SoilHydrologyMod (HUM_HOL blocks)
 	real(r8) :: finund_rec_tau = 0._r8 ! days; with fix_finund_rates, the rate multiplier follows f down at once but recovers toward f with this e-folding time after rewetting (post-drawdown recovery memory); 0 = off (multiplier = f); optional trailing value line
+	real(r8) :: ea_cap = 0._r8       ! molC/m3 (acetate-C equivalent); alternative electron acceptor capacity regenerated during drawdown; acceptor reducers compete with acetoclastic methanogens in the saturated fraction and oxidize acetate to CO2; 0 = off; optional trailing value line
+	real(r8) :: ea_regen_tau = 10._r8 ! days; e-folding time of acceptor regeneration toward ea_cap, scaled by the exposed fraction (1 - f); optional trailing value line
+	real(r8) :: ea_kfac = 10._r8      ! acceptor-reducer acetate uptake relative to acetoclastic methanogenesis when the pool is full (scales with ea_sat/ea_cap); optional trailing value line
 	real(r8) :: root_exud_frac = 0._r8 ! root exudation as a fraction of GPP to metabolic litter along froot_prof (CNAllocation, CNCStateUpdate1); 0 = off; optional trailing value line
 	logical :: fix_finund_obswl = .false. ! water-coverage scalar from a prescribed daily observed water level (./finund_obswl.txt: year doy level_m, positive above the ground) instead of the model water table; same level for all columns; optional trailing switch
 	integer, parameter :: obswl_y0 = 1850, obswl_y1 = 2100   ! year range of the observed-level table
@@ -351,6 +354,9 @@ real(r8)::dummy(nummicrobepar)
           if (trim(adjustl(swname)) == 'fix_finund_obswl') fix_finund_obswl = (swval > 0.5_r8)
           if (trim(adjustl(swname)) == 'root_exud_frac') root_exud_frac = swval
           if (trim(adjustl(swname)) == 'finund_rec_tau') finund_rec_tau = swval
+          if (trim(adjustl(swname)) == 'ea_cap') ea_cap = swval
+          if (trim(adjustl(swname)) == 'ea_regen_tau') ea_regen_tau = swval
+          if (trim(adjustl(swname)) == 'ea_kfac') ea_kfac = swval
        end do
        call relavu( unitn )
 
@@ -620,6 +626,9 @@ end if
     call mpi_bcast (fix_finund_obswl, 1 , MPI_LOGICAL, 0, mpicom, ierr)
     call mpi_bcast (root_exud_frac, 1 , MPI_REAL8, 0, mpicom, ierr)
     call mpi_bcast (finund_rec_tau, 1 , MPI_REAL8, 0, mpicom, ierr)
+    call mpi_bcast (ea_cap, 1 , MPI_REAL8, 0, mpicom, ierr)
+    call mpi_bcast (ea_regen_tau, 1 , MPI_REAL8, 0, mpicom, ierr)
+    call mpi_bcast (ea_kfac, 1 , MPI_REAL8, 0, mpicom, ierr)
     call mpi_bcast (obswl_m, size(obswl_m) , MPI_REAL8, 0, mpicom, ierr)
     call mpi_bcast (m_Fick_ad, 1 , MPI_REAL8, 0, mpicom, ierr)
     call mpi_bcast (m_dPlantTrans, 1 , MPI_REAL8, 0, mpicom, ierr)
@@ -736,6 +745,7 @@ end if
 	write(iulog,*)'fix_finund_obswl = ', fix_finund_obswl
 	write(iulog,*)'root_exud_frac = ', root_exud_frac
 	write(iulog,*)'finund_rec_tau = ', finund_rec_tau
+	write(iulog,*)'ea_cap = ', ea_cap, ' ea_regen_tau = ', ea_regen_tau, ' ea_kfac = ', ea_kfac
 	
 	write(iulog,*)'m_dPlantTrans = ', m_dPlantTrans
 	
