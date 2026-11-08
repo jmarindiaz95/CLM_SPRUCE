@@ -14,7 +14,7 @@ EXE=${EXE:-/scratch/jmarindi/elm_work/builds/qui_cal_exud/cesm.exe}   # override
 [ $(wc -l < $TABLE) -eq 1096 ] || { echo "ERROR: table must have 1096 lines"; exit 1; }
 for M in "$@"; do
   S=$ENS/$M; D=$OUT/$M
-  R=$S/qui_cal_exud.clm2.r.2020-01-01-00000.nc
+  R=$(ls $S/*.clm2.r.2020-01-01-00000.nc 2>/dev/null | head -1 || true); R=${R:-$S/missing.clm2.r.2020-01-01-00000.nc}   # case name differs per build
   [ -f $R ] || { echo "ERROR: $R missing"; exit 1; }
   [ -e $D ] && { echo "ERROR: $D exists"; exit 1; }
   mkdir -p $D
