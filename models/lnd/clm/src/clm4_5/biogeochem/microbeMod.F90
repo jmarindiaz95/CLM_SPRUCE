@@ -41,6 +41,7 @@ implicit none
 #if (defined HUM_HOL)
 	private :: lateral_bgc
 	private :: fin_rate_of
+	private :: rec_sat_of
 	real(r8), allocatable :: fin_rate(:)   ! finund_rec_tau: lagged rate multiplier by column (not in restart: starts at f)
 #endif
 !
@@ -2017,6 +2018,7 @@ end if  ! end if of the frozen mechanism in trapping gases in soil
 
 !	end if
 !	end if
+	if (fix_finund_rates .and. finund_rec_tau > 0._r8) H2CH4Prod = H2CH4Prod * rec_sat_of(c, finundated(c))   ! recovery memory (saturated fraction)
 			
 	H2Cons = 4. * (H2AceProd + H2CH4Prod)
 
@@ -2073,6 +2075,7 @@ end if  ! end if of the frozen mechanism in trapping gases in soil
 	!else
 !	write(iulog,*)"1888 acecons: ", m_dGrowRAceMethanogens, m_dYAceMethanogens, cacebios(c,j), caces(c,j), m_dKCH4ProdAce, m_dCH4ProdQ10, AceCons, ccon_co2s(c,j) 
 	!endif
+	if (fix_finund_rates .and. finund_rec_tau > 0._r8) AceCons = AceCons * rec_sat_of(c, finundated(c))   ! recovery memory (saturated fraction)
 	
 	if(caces_sat(c,j) > (AceCons * dt)) then
 	AceCons = AceCons
@@ -3116,6 +3119,20 @@ real(r8) function fin_rate_of(c, f)
 	   if (allocated(fin_rate)) fin_rate_of = fin_rate(c)
 	end if
 end function fin_rate_of
+
+!-----------------------------------------------------------------------
+! finund_rec_tau: methanogenesis factor in the saturated fraction, fin_rate / f (<= 1) during recovery after rewetting,
+! so that whole-column methanogenic activity follows the lagged multiplier instead of f; 1 when the memory is off
+real(r8) function rec_sat_of(c, f)
+	use microbevarcon, only : finund_rec_tau
+	implicit none
+	integer, intent(in) :: c
+	real(r8), intent(in) :: f
+	rec_sat_of = 1._r8
+	if (finund_rec_tau > 0._r8 .and. f > 0._r8) then
+	   if (allocated(fin_rate)) rec_sat_of = min(1._r8, fin_rate(c) / f)
+	end if
+end function rec_sat_of
 
 !-----------------------------------------------------------------------
 subroutine update_finundated(lbc,ubc,num_micbioc,filter_micbioc)
