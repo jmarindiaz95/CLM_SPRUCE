@@ -9,7 +9,7 @@ set -euo pipefail
 ENS=$1; OUT=$2; shift 2
 FORC=/scratch/jmarindi/clm_work/clm-microbe/inputdata/atm/datm7/CLM1PT_data/2x1pt_PE-QFR_2018-2022
 TABLE=$OUT/finund_obswl_2020-2022.txt
-EXE=/scratch/jmarindi/elm_work/builds/qui_cal_exud/cesm.exe
+EXE=${EXE:-/scratch/jmarindi/elm_work/builds/qui_cal_exud/cesm.exe}   # override for another build
 [ -f $TABLE ] && [ -f $FORC/2022-12.nc ] && [ -f $FORC/2020-01.nc ] || { echo "ERROR: forcing or level table missing"; exit 1; }
 [ $(wc -l < $TABLE) -eq 1096 ] || { echo "ERROR: table must have 1096 lines"; exit 1; }
 for M in "$@"; do
