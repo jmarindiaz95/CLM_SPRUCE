@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Create calibration members (ranges: pilot | revised) from the built template run directory (runs/qui_cal_tmpl): Latin hypercube over the
+"""Create calibration members (ranges: pilot | revised | obswl) from the built template run directory (runs/qui_cal_tmpl): Latin hypercube over the
 parameters below, per-member microbepar_in, lnd_in (finund_k, finund_min, fpftcon -> member copy with k_dom) and
-namelists; writes design.csv and a Slurm array script.  Usage: make_members.py <set> <n> <seed> [pilot|revised]"""
+namelists; writes design.csv and a Slurm array script.  Usage: make_members.py <set> <n> <seed> [pilot|revised|obswl]
+'obswl': revised ranges with finund_min 0.15-0.60, template/executable qui_cal_exud (has fix_finund_obswl and
+root_exud_frac), fix_finund_obswl 1 and ./finund_obswl.txt (sol/qui_cal/make_obswl.py) in every member; root_exud_frac off."""
 import csv, re, shutil, sys
 from pathlib import Path
 import numpy as np
@@ -23,15 +25,24 @@ PARAMS = [('m_dAceProdACmax', 'microbe', 2e-8, 2e-6, True), ('m_dKAce', 'microbe
 # water-coverage floor below Yuan's 0.45, production and CH4 threshold narrowed.
 REVISED = {'m_dKCH4OxidCH4': (0.1, 3.0, True), 'finund_min': (0.10, 0.45, False),
            'm_dAceProdACmax': (5e-8, 1e-6, True), 'm_dCH4min': (0.01, 0.1, True)}
+# Observed-water-level ensemble (2026-11-07): the low floor of the main ensemble compensated for a model water table
+# 5-10 cm too low (results/qui_finund_obswl); with the observed level the floor range returns to bracket Yuan's 0.45.
+OBSWL = dict(REVISED, finund_min=(0.15, 0.60, False))
+OBSWL_TMPL, OBSWL_EXE = W/'runs/qui_cal_exud', W/'builds/qui_cal_exud/cesm.exe'
+OBSWL_TABLE = W/'qui_cal/obswl/finund_obswl.txt'
 
 def lhs(n, k, rng):
     u = (np.argsort(rng.random((n, k)), axis=0) + rng.random((n, k))) / n
     return u
 
 def main(setname, n, seed, ranges='pilot'):
-    global PARAMS
-    if ranges == 'revised':
-        PARAMS = [(pn, kind) + REVISED.get(pn, (lo, hi, lg)) for pn, kind, lo, hi, lg in PARAMS]
+    global PARAMS, TMPL, EXE
+    if ranges in ('revised', 'obswl'):
+        R = REVISED if ranges == 'revised' else OBSWL
+        PARAMS = [(pn, kind) + R.get(pn, (lo, hi, lg)) for pn, kind, lo, hi, lg in PARAMS]
+    if ranges == 'obswl':
+        TMPL, EXE = OBSWL_TMPL, OBSWL_EXE
+        assert OBSWL_TABLE.exists() and len(OBSWL_TABLE.read_text().splitlines()) == 6 * 365
     out = W/'qui_cal'/setname
     out.mkdir(parents=True)
     assert EXE.exists() and (TMPL/'lnd_in').exists() and (TMPL/'datm.global1val.streams.co2.txt').exists()
@@ -65,6 +76,10 @@ def main(setname, n, seed, ranges='pilot'):
             f['k_dom'][PFT] = vals['k_dom']
         lnd, k = re.subn(r"(fpftcon\s*=\s*')[^']+'", lambda m: m.group(1) + str(d/'clm_params_member.nc') + "'", lnd)
         assert k == 1
+        if ranges == 'obswl':
+            assert 'fix_finund_obswl' not in mp and 'root_exud_frac' not in mp
+            mp = mp.rstrip('\n') + '\nfix_finund_obswl\t1\n'
+            shutil.copy2(OBSWL_TABLE, d/'finund_obswl.txt')
         (d/'microbepar_in').write_text(mp); (d/'lnd_in').write_text(lnd)
         rows.append(dict(member=name, **vals))
     with (out/'design.csv').open('w', newline='') as fh:
