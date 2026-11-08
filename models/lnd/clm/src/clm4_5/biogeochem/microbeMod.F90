@@ -40,6 +40,8 @@ implicit none
 	private :: ch4bud_stock
 #if (defined HUM_HOL)
 	private :: lateral_bgc
+	private :: fin_rate_of
+	real(r8), allocatable :: fin_rate(:)   ! finund_rec_tau: lagged rate multiplier by column (not in restart: starts at f)
 #endif
 !
 ! !REVISION HISTORY:
@@ -1104,7 +1106,7 @@ if(j >= jwaterhead_unsat(c)) then
 	AceProd = ACConcentration * 2.0 / 3.0 / dt
 	ACCO2Prod = 0.5 * AceProd
 	end if
-	if (fix_finund_rates) AceProd = AceProd * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
+	if (fix_finund_rates) AceProd = AceProd * fin_rate_of(c, finundated(c))   ! Yuan et al. 2023 limiter (unsaturated fraction)
 	
 !	caces_unsat_prod(c,j) = AceProd
 
@@ -1157,8 +1159,8 @@ if(j >= jwaterhead_unsat(c)) then
 !write(iulog,*) "ccon_h2s(c,j): ",	ccon_h2s(c,j)	 
 	ACConcentration = ACConcentration - (3.0 / 2.0 * AceProd * dt)
 	
-	if (fix_finund_rates) H2AceProd = H2AceProd * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
-	if (fix_finund_rates) H2CH4Prod = H2CH4Prod * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
+	if (fix_finund_rates) H2AceProd = H2AceProd * fin_rate_of(c, finundated(c))   ! Yuan et al. 2023 limiter (unsaturated fraction)
+	if (fix_finund_rates) H2CH4Prod = H2CH4Prod * fin_rate_of(c, finundated(c))   ! Yuan et al. 2023 limiter (unsaturated fraction)
 	H2Cons = 4. * (H2AceProd + H2CH4Prod)
 
 	H2Cons = max(0._r8, H2Cons)
@@ -1205,7 +1207,7 @@ if(j >= jwaterhead_unsat(c)) then
 	else
 	AceCons = caces_unsat(c,j) / dt
 	end if
-	if (fix_finund_rates) AceCons = AceCons * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
+	if (fix_finund_rates) AceCons = AceCons * fin_rate_of(c, finundated(c))   ! Yuan et al. 2023 limiter (unsaturated fraction)
 
 	caces_unsat(c,j) = caces_unsat(c,j) - AceCons * dt
 
@@ -1242,7 +1244,7 @@ if(j >= jwaterhead_unsat(c)) then
 	if(CH4Oxid < 0) then
 	CH4Oxid = 0
 	end if
-	if (fix_finund_rates) CH4Oxid = CH4Oxid * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
+	if (fix_finund_rates) CH4Oxid = CH4Oxid * fin_rate_of(c, finundated(c))   ! Yuan et al. 2023 limiter (unsaturated fraction)
 
 	
 !write(iulog,*) "CH4PlantFlux: ", m_dPlantTrans, " ", rootfr_vr(c,j), ccon_ch4s_unsat(c,j), m_dCH4min !, tempavg_bgnpp(c), annavg_bgnpp(c)
@@ -1262,8 +1264,8 @@ if(j >= jwaterhead_unsat(c)) then
 	else
 	CH4Ebull = min(CH4Ebull, ccon_ch4s_unsat(c,j) / 2.0)
 	end if
-	if (fix_finund_rates) CH4PlantFlux = CH4PlantFlux * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
-	if (fix_finund_rates) CH4Ebull = CH4Ebull * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
+	if (fix_finund_rates) CH4PlantFlux = CH4PlantFlux * fin_rate_of(c, finundated(c))   ! Yuan et al. 2023 limiter (unsaturated fraction)
+	if (fix_finund_rates) CH4Ebull = CH4Ebull * fin_rate_of(c, finundated(c))   ! Yuan et al. 2023 limiter (unsaturated fraction)
 			
 	!	// For O2 dyndamics
 	AerO2Cons = m_drAer * ACCO2Prod
@@ -1487,7 +1489,7 @@ else
 	else	
 	AceProd = ACConcentration * 2.0 / 3.0 / dt
 	end if
-	if (fix_finund_rates) AceProd = AceProd * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
+	if (fix_finund_rates) AceProd = AceProd * fin_rate_of(c, finundated(c))   ! Yuan et al. 2023 limiter (unsaturated fraction)
 	
 !	caces_unsat_prod(c,j) = AceProd
 
@@ -1566,7 +1568,7 @@ else
 	else
 	AceCons = (caces_unsat(c,j) - OxidAce2CO2 * dt) / dt
 	end if
-	if (fix_finund_rates) AceCons = AceCons * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
+	if (fix_finund_rates) AceCons = AceCons * fin_rate_of(c, finundated(c))   ! Yuan et al. 2023 limiter (unsaturated fraction)
 
 	caces_unsat(c,j) = caces_unsat(c,j) - (AceCons + OxidAce2CO2) * dt
 	caces_unsat(c,j) = max(0._r8 ,caces_unsat(c,j))
@@ -1597,7 +1599,7 @@ else
 	end if
 
 	CH4Oxid = max(0._r8 ,CH4Oxid)
-	if (fix_finund_rates) CH4Oxid = CH4Oxid * finundated(c)   ! Yuan et al. 2023 limiter (unsaturated fraction)
+	if (fix_finund_rates) CH4Oxid = CH4Oxid * fin_rate_of(c, finundated(c))   ! Yuan et al. 2023 limiter (unsaturated fraction)
 
 	if (isotope == 'bulk') ch4bud_before = ccon_ch4s_unsat(c,j)
 	ccon_ch4s_unsat(c,j) = ccon_ch4s_unsat(c,j) - CH4Oxid * dt
@@ -3102,6 +3104,20 @@ end subroutine get_waterhead
 
 
 
+!-----------------------------------------------------------------------
+! finund_rec_tau: rate multiplier used by fix_finund_rates; f itself unless the recovery memory is on
+real(r8) function fin_rate_of(c, f)
+	use microbevarcon, only : finund_rec_tau
+	implicit none
+	integer, intent(in) :: c
+	real(r8), intent(in) :: f
+	fin_rate_of = f
+	if (finund_rec_tau > 0._r8) then
+	   if (allocated(fin_rate)) fin_rate_of = fin_rate(c)
+	end if
+end function fin_rate_of
+
+!-----------------------------------------------------------------------
 subroutine update_finundated(lbc,ubc,num_micbioc,filter_micbioc)
 ! 
 ! !DESCRIPTION: Annual mean fields.
@@ -3114,7 +3130,7 @@ subroutine update_finundated(lbc,ubc,num_micbioc,filter_micbioc)
 !
 ! !ARGUMENTS:
 	use microbevarcon, only : fix_finund_repart, fix_finund_ponded, fix_finund_hum_datum, humhol_ht_fin
-	use microbevarcon, only : fix_finund_obswl, obswl_m, obswl_y0, obswl_y1
+	use microbevarcon, only : fix_finund_obswl, obswl_m, obswl_y0, obswl_y1, finund_rec_tau
 	use clm_time_manager, only: get_curr_date
 	use clm_varctl, only : use_zwt_finundation, finund_k, finund_min
 implicit none
@@ -3164,6 +3180,7 @@ implicit none
 	integer :: c, j, l      ! indices
 	integer :: fc        ! soil column filter indices
 	real(r8) :: dlt
+	real(r8) :: wrec                                ! finund_rec_tau: relaxation weight per step
 !EOP
 !-----------------------------------------------------------------------
 ! assign local pointers to derived type arrays
@@ -3196,6 +3213,12 @@ implicit none
 	ltype               				=> lun%itype
 	clandunit       				=> col%landunit
 ! set time steps
+	if (finund_rec_tau > 0._r8) then
+	   if (.not. allocated(fin_rate)) then
+	      allocate(fin_rate(lbc:ubc)); fin_rate(:) = -1._r8
+	   end if
+	   wrec = 1._r8 - exp(-get_step_size() / (finund_rec_tau * secspday))
+	end if
 
 	do fc = 1,num_micbioc
         c = filter_micbioc(fc)
@@ -3315,6 +3338,14 @@ implicit none
 	end do
         end if
 	finundated_pre(c) = finundated(c)
+	! finund_rec_tau: post-drawdown recovery memory of the rate multiplier (the area split above uses f itself)
+	if (finund_rec_tau > 0._r8) then
+	   if (fin_rate(c) < 0._r8 .or. finundated(c) <= fin_rate(c)) then
+	      fin_rate(c) = finundated(c)
+	   else
+	      fin_rate(c) = fin_rate(c) + (finundated(c) - fin_rate(c)) * wrec
+	   end if
+	end if
 	end do
 
 end subroutine update_finundated
